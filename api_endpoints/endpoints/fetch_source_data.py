@@ -17,8 +17,8 @@ def get_source_data(db: Session = Depends(get_db)):
     global API_SOURCE_DATA
     response = requests.get(constants.COINGECKO_API_URL, params=constants.URL_PARAMS)
     response_data = response.json()
-    API_SOURCE_DATA = len(response_data)
-    print(len(response_data))
+    API_SOURCE_DATA.append(response_data)
+    print(">>> data length:", len(response_data))
 
     endpoint_utils.insert_api_source_data_in_db(source_data=response_data, db=db)
     return response_data
