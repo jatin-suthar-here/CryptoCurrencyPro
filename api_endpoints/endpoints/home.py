@@ -1,8 +1,7 @@
-import schemas
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from database import get_db
+from utils.database import get_db, ENV
 from typing import List, Annotated
 
 
@@ -35,38 +34,36 @@ def create_item(name: str,
     """)
     result = db.execute(sql_query)
     db.commit() 
-    result_dict = {}
-    count = 1
-    for i in result.fetchall():
-        # print(i)
-        result_dict[count] = str(i)
-        count += 1
-
-    # print(result_dict) 
 
     # Convert the result (tuple) to a dictionary for response validation
     return {
         "id": created_item[0],
         "name": created_item[1],
         "description": created_item[2],
-        "price": created_item[3]
-    }, result_dict
+        "price": created_item[3],
+        "ENV": ENV
+    }
 
 
 @router.get("/get-items")
 def get_items(db: Session = Depends(get_db)):
-    sql_query = text("""
-        SELECT * FROM items;
-    """)
+    sql_query = text(""" SELECT * FROM items; """)
     result = db.execute(sql_query)
-    db.commit() 
-    result_dict = {}
-    count = 1
-    for i in result.fetchall():
-        print(i)
-        result_dict[count] = str(i)
-        count += 1
 
-    print(result_dict)
-    return result_dict 
+    # Fetch column names from the result
+    column_names = result.keys()
 
+    # Convert result rows into a list of dictionaries
+    result_list = [
+        {column: value for column, value in zip(column_names, row)} 
+        for row in result.fetchall()
+    ]
+    return result_list
+
+
+@router.get("/reset-db")
+def reset_db(table: str, db: Session = Depends(get_db)):
+    sql_query = text(f""" DROP TABLE {table}; """)
+    db.execute(sql_query)
+    db.commit()
+    return {"message": f"{table} successfully deleted."}
