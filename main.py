@@ -29,7 +29,8 @@ if __name__ == "__main__":
 
     # Run based on the provided argument
     if args.task == "setup":
-        setup_database.reset_database()
+        setup_database.drop_database()
+        setup_database.create_tables()
     elif args.task == "server":
         uvicorn.run(app, host="0.0.0.0", port=8500)
 

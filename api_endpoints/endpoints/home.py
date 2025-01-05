@@ -47,11 +47,12 @@ def create_item(name: str,
 
 @router.get("/get-items")
 def get_items(db: Session = Depends(get_db)):
-    sql_query = text(""" SELECT * FROM items; """)
+    sql_query = text(""" SELECT * FROM stocks; """)
     result = db.execute(sql_query)
 
-    # Fetch column names from the result
+    # # Fetch column names from the result
     column_names = result.keys()
+    print(column_names)
 
     # Convert result rows into a list of dictionaries
     result_list = [
@@ -59,11 +60,3 @@ def get_items(db: Session = Depends(get_db)):
         for row in result.fetchall()
     ]
     return result_list
-
-
-@router.get("/reset-db")
-def reset_db(table: str, db: Session = Depends(get_db)):
-    sql_query = text(f""" DROP TABLE {table}; """)
-    db.execute(sql_query)
-    db.commit()
-    return {"message": f"{table} successfully deleted."}
