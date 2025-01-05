@@ -15,6 +15,15 @@ URL_PARAMS = {
 }
 
 
+## DataBase Configurations
+HOSTNAME = "dpg-ctsdo4tumphs73flrbr0-a"
+DATABASE = "crypto_currency_db_cb60"
+USERNAME = "crypto_currency_db_cb60_user"
+PASSWORD = "FJ9tobXuAcfpjoe3MpBShtz6zr1esXW9"
+INTERNAL_DB_URL = "postgresql://crypto_currency_db_cb60_user:FJ9tobXuAcfpjoe3MpBShtz6zr1esXW9@dpg-ctsdo4tumphs73flrbr0-a/crypto_currency_db_cb60"
+EXTERNAL_DB_URL = "postgresql://crypto_currency_db_cb60_user:FJ9tobXuAcfpjoe3MpBShtz6zr1esXW9@dpg-ctsdo4tumphs73flrbr0-a.oregon-postgres.render.com/crypto_currency_db_cb60"
+PSQL_CMD = "PGPASSWORD=FJ9tobXuAcfpjoe3MpBShtz6zr1esXW9 psql -h dpg-ctsdo4tumphs73flrbr0-a.oregon-postgres.render.com -U crypto_currency_db_cb60_user crypto_currency_db_cb60"
+
 
 
 

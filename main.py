@@ -1,12 +1,13 @@
 import uvicorn
 from fastapi import FastAPI
-from endpoints import fetch_source_data
+from endpoints import home, fetch_source_data
 
 
 app = FastAPI()
 
 
 # Include routers
+app.include_router(home.router)
 app.include_router(fetch_source_data.router, prefix="/api")
 
 
