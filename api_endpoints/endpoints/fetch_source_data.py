@@ -32,7 +32,7 @@ def get_source_data(db: Session = Depends(get_db)):
             print(f"Insertion failed: {error_message}")
             raise HTTPException(status_code=500, detail=f"Insertion failed: {error_message}")
         
-        return {"status": "success", "data_length": len(response_data), "data": response_data}
+        return response_data
     
     except requests.exceptions.RequestException as e:
         # Handle any errors related to the API request
