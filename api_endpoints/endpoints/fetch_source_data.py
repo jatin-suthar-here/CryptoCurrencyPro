@@ -1,6 +1,6 @@
 import requests
 import asyncio  # For periodic tasks
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, WebSocket
 from sqlalchemy.orm import Session
 from constants import constants
 from utils.database import get_db
@@ -13,6 +13,34 @@ router = APIRouter()
 # Global variables
 API_SOURCE_DATA = []
 TRENDING_STOCKS = []
+
+
+
+
+
+# Dummy data stream for cryptocurrency prices
+async def crypto_price_stream():
+    while True:
+        # Simulate real-time price changes
+        yield {"symbol": "BTC", "price": round(50000 + 1000 * asyncio.random(), 2)}
+        await asyncio.sleep(2)  # Simulate 2-second intervals
+
+@router.websocket("/ws/crypto-prices")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()  # Accept the WebSocket connection
+    try:
+        async for data in crypto_price_stream():
+            await websocket.send_json(data)  # Send real-time data to the client
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+    finally:
+        await websocket.close()
+
+
+
+
+
+
 
 
 # Function to fetch data during startup

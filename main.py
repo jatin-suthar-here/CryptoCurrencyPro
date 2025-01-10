@@ -26,29 +26,7 @@ from utils import setup_database
 # # Pass the lifespan function to FastAPI
 # app = FastAPI(lifespan=app_lifespan)  
 
-
 app = FastAPI()  
-
-# Dummy data stream for cryptocurrency prices
-async def crypto_price_stream():
-    while True:
-        # Simulate real-time price changes
-        yield {"symbol": "BTC", "price": round(50000 + 1000 * asyncio.random(), 2)}
-        await asyncio.sleep(2)  # Simulate 2-second intervals
-
-@app.websocket("/ws/crypto-prices")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()  # Accept the WebSocket connection
-    try:
-        async for data in crypto_price_stream():
-            await websocket.send_json(data)  # Send real-time data to the client
-    except Exception as e:
-        print(f"WebSocket error: {e}")
-    finally:
-        await websocket.close()
-
-
-
 
 # Include routers
 app.include_router(home.router)
