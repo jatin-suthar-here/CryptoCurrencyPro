@@ -27,13 +27,14 @@ async def crypto_price_stream():
 
 @router.websocket("/ws/crypto-prices")
 async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()  # Accept the WebSocket connection
+    await websocket.accept()
     try:
-        async for data in crypto_price_stream():
-            await websocket.send_json(data)  # Send real-time data to the client
+        while True:
+            data = await websocket.receive_text()
+            print(f"Received message: {data}")
+            await websocket.send_text(f"Echo: {data}")  # Respond back
     except Exception as e:
         print(f"WebSocket error: {e}")
-    finally:
         await websocket.close()
 
 
