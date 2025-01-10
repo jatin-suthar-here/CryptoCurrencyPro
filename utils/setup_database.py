@@ -15,22 +15,22 @@ metadata = MetaData()
 
 
 # TABLE 1
-stocks_table = Table(
-    "stocks",
-    metadata,
-    Column("id", Integer, primary_key=True, autoincrement=True),  # Primary key
-    Column("stocks_id", String(100), nullable=False, unique=True),  # Unique stock ID
-    Column("symbol", String(20), nullable=False),  # Stock symbol (e.g., BTC)
-    Column("name", String(100), nullable=False),  # Stock name (e.g., Bitcoin)
-    Column("image", String, nullable=False),  # URL for the image
-    Column("current_price", String(100), nullable=True),  # Current price of the stock
-    Column("market_cap", String(100), nullable=True),  # Market capitalization
-    Column("market_cap_rank", String(100), nullable=True),  # Market cap rank
-    Column("high_24h", String(100), nullable=True),  # Highest price in the last 24h
-    Column("low_24h", String(100), nullable=True),  # Lowest price in the last 24h
-    Column("price_change_24h", String(100), nullable=True),  # Absolute price change in the last 24h
-    Column("price_change_percentage_24h", String(100), nullable=True),  # Percentage price change in the last 24h
-)
+# stocks_table = Table(
+#     "stocks",
+#     metadata,
+#     Column("id", Integer, primary_key=True, autoincrement=True),  # Primary key
+#     Column("stocks_id", String(100), nullable=False, unique=True),  # Unique stock ID
+#     Column("symbol", String(20), nullable=False),  # Stock symbol (e.g., BTC)
+#     Column("name", String(100), nullable=False),  # Stock name (e.g., Bitcoin)
+#     Column("image", String, nullable=False),  # URL for the image
+#     Column("current_price", String(100), nullable=True),  # Current price of the stock
+#     Column("market_cap", String(100), nullable=True),  # Market capitalization
+#     Column("market_cap_rank", String(100), nullable=True),  # Market cap rank
+#     Column("high_24h", String(100), nullable=True),  # Highest price in the last 24h
+#     Column("low_24h", String(100), nullable=True),  # Lowest price in the last 24h
+#     Column("price_change_24h", String(100), nullable=True),  # Absolute price change in the last 24h
+#     Column("price_change_percentage_24h", String(100), nullable=True),  # Percentage price change in the last 24h
+# )
 
 
 

@@ -15,27 +15,27 @@ TRENDING_STOCKS = []
 @router.get("/fetch-source-data")
 def get_source_data(db: Session = Depends(get_db)):
     try:
-        # Fetch source data from the external API
-        response = requests.get(constants.COINGECKO_API_URL, params=constants.URL_PARAMS)
-        response.raise_for_status()  # Raise an HTTPError if the response status is 4xx/5xx
-        response_data = response.json()
-        
-        # Append the fetched data to the global variable
-        API_SOURCE_DATA.append(response_data)
-        print(">>> data length:", len(response_data))
-        
-        # Insert data into the database
-        insert_result = endpoint_utils.insert_api_source_data_in_db(source_data=response_data, db=db)
-        
-        if insert_result["status"] == "failure":
-            error_message = insert_result.get("error", "Unknown error occurred during insertion.")
-            print(f"Insertion failed: {error_message}")
-            raise HTTPException(status_code=500, detail=f"Insertion failed: {error_message}")
-        
-        return response_data
-    
+        if not API_SOURCE_DATA:
+            # Fetch source data from the external API
+            response = requests.get(constants.COINGECKO_API_URL, params=constants.URL_PARAMS)
+            response.raise_for_status()  # Raise an HTTPError if the response status is 4xx/5xx
+            response_data = response.json()
+            
+            # Append the fetched data to the global variable
+            API_SOURCE_DATA.append(response_data)
+            print(">>> data length:", len(response_data))
+            
+            # # Insert data into the database
+            # insert_result = endpoint_utils.insert_api_source_data_in_db(source_data=response_data, db=db)
+            
+            # if insert_result["status"] == "failure":
+            #     error_message = insert_result.get("error", "Unknown error occurred during insertion.")
+            #     print(f"Insertion failed: {error_message}")
+            #     raise HTTPException(status_code=500, detail=f"Insertion failed: {error_message}")
+            
+            return response_data
+        else: return API_SOURCE_DATA    
     except requests.exceptions.RequestException as e:
-        # Handle any errors related to the API request
         print(f"API request failed: {str(e)}")
         raise HTTPException(status_code=502, detail=f"API request failed: {str(e)}")
     

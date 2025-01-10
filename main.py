@@ -1,6 +1,6 @@
 import uvicorn, argparse
 from fastapi import FastAPI
-from api_endpoints.endpoints import home, fetch_source_data
+from api_endpoints.endpoints import home, fetch_source_data, filters
 from utils import setup_database
 
 
@@ -10,6 +10,7 @@ app = FastAPI()
 # Include routers
 app.include_router(home.router)
 app.include_router(fetch_source_data.router, prefix="/api")
+app.include_router(filters.router, prefix="/api")
 
 
 if __name__ == "__main__":
