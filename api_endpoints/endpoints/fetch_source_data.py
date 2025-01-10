@@ -30,7 +30,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
-            data = await websocket.receive_text()
+            data = await websocket.receive_bytes() 
             print(f"Received message: {data}")
             await websocket.send_text(f"Echo: {data}")  # Respond back
     except Exception as e:
