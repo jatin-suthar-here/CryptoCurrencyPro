@@ -1,4 +1,5 @@
 import requests
+import asyncio  # For periodic tasks
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from constants import constants
@@ -37,6 +38,22 @@ async def fetch_source_data_from_api():
     except Exception as e:
         print(f"Unexpected error during startup: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error during startup: {str(e)}")
+
+
+# Periodically fetch source data
+async def periodic_fetch_data():
+    """
+    Periodically call `fetch_source_data_from_api` to update API_SOURCE_DATA.
+    """
+    while True:
+        try:
+            await fetch_source_data_from_api()  # Reuse the populate function
+        except Exception as e:
+            print(f"Error during periodic fetch: {str(e)}")
+
+        # Wait for 15 minutes before the next fetch
+        await asyncio.sleep(15 * 60)
+
 
 
 @router.get("/fetch-source-data")

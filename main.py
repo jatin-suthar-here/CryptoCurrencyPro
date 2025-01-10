@@ -1,26 +1,53 @@
 import uvicorn, argparse
-from fastapi import FastAPI
+import asyncio
+from fastapi import FastAPI, WebSocket
 from api_endpoints.endpoints import home, fetch_source_data, filters
 from utils import setup_database
 
 
-async def app_lifespan(app: FastAPI):
-    """ Lifespan event handler for FastAPI app startup and shutdown. """
-    print("App is starting...")
+# async def app_lifespan(app: FastAPI):
+#     """ Lifespan event handler for FastAPI app startup and shutdown. """
+#     print("App is starting...")
     
-    # Startup logic
-    # Populate API_SOURCE_DATA during startup
-    await fetch_source_data.fetch_source_data_from_api()  
+#     # Startup logic
+#     # Populate API_SOURCE_DATA during startup of App (Server)
+#     await fetch_source_data.fetch_source_data_from_api()  
 
-    # Allows the app to start and wait for shutdown
-    yield  
+#     # # Start periodic task to fetch data every 15 minutes
+#     # app.state.periodic_task = asyncio.create_task(fetch_source_data.periodic_fetch_data())
 
-    # Shutdown logic (if needed)
-    print("App is shutting down...")
+#     # Allows the app to start and wait for shutdown
+#     yield  
+
+#     # Shutdown logic (if needed)
+#     print("App is shutting down...")
 
 
-# Pass the lifespan function to FastAPI
-app = FastAPI(lifespan=app_lifespan)  
+# # Pass the lifespan function to FastAPI
+# app = FastAPI(lifespan=app_lifespan)  
+
+
+app = FastAPI()  
+
+# Dummy data stream for cryptocurrency prices
+async def crypto_price_stream():
+    while True:
+        # Simulate real-time price changes
+        yield {"symbol": "BTC", "price": round(50000 + 1000 * asyncio.random(), 2)}
+        await asyncio.sleep(2)  # Simulate 2-second intervals
+
+@app.websocket("/ws/crypto-prices")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()  # Accept the WebSocket connection
+    try:
+        async for data in crypto_price_stream():
+            await websocket.send_json(data)  # Send real-time data to the client
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+    finally:
+        await websocket.close()
+
+
 
 
 # Include routers
