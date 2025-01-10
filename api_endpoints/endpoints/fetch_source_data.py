@@ -30,7 +30,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
-            data = await websocket.receive_bytes() 
+            data = await crypto_price_stream()
             print(f"Received message: {data}")
             await websocket.send_text(f"Echo: {data}")  # Respond back
     except Exception as e:
