@@ -15,35 +15,6 @@ API_SOURCE_DATA = []
 TRENDING_STOCKS = []
 
 
-
-
-
-# Dummy data stream for cryptocurrency prices
-async def crypto_price_stream():
-    while True:
-        # Simulate real-time price changes
-        yield {"symbol": "BTC", "price": round(50000 + 1000 * asyncio.random(), 2)}
-        await asyncio.sleep(2)  # Simulate 2-second intervals
-
-@router.websocket("/ws/crypto-prices")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    try:
-        while True:
-            data = await crypto_price_stream()
-            print(f"Received message: {data}")
-            await websocket.send_text(f"Echo: {data}")  # Respond back
-    except Exception as e:
-        print(f"WebSocket error: {e}")
-        await websocket.close()
-
-
-
-
-
-
-
-
 # Function to fetch data during startup
 async def fetch_source_data_from_api():
     """

@@ -5,28 +5,27 @@ from api_endpoints.endpoints import home, fetch_source_data, filters
 from utils import setup_database
 
 
-# async def app_lifespan(app: FastAPI):
-#     """ Lifespan event handler for FastAPI app startup and shutdown. """
-#     print("App is starting...")
+async def app_lifespan(app: FastAPI):
+    """ Lifespan event handler for FastAPI app startup and shutdown. """
+    print("App is starting...")
     
-#     # Startup logic
-#     # Populate API_SOURCE_DATA during startup of App (Server)
-#     await fetch_source_data.fetch_source_data_from_api()  
+    # Startup logic
+    # Populate API_SOURCE_DATA during startup of App (Server)
+    await fetch_source_data.fetch_source_data_from_api()  
 
-#     # # Start periodic task to fetch data every 15 minutes
-#     # app.state.periodic_task = asyncio.create_task(fetch_source_data.periodic_fetch_data())
+    # # Start periodic task to fetch data every 15 minutes
+    # app.state.periodic_task = asyncio.create_task(fetch_source_data.periodic_fetch_data())
 
-#     # Allows the app to start and wait for shutdown
-#     yield  
+    # Allows the app to start and wait for shutdown
+    yield  
 
-#     # Shutdown logic (if needed)
-#     print("App is shutting down...")
+    # Shutdown logic (if needed)
+    print("App is shutting down...")
 
 
-# # Pass the lifespan function to FastAPI
-# app = FastAPI(lifespan=app_lifespan)  
+# Pass the lifespan function to FastAPI
+app = FastAPI(lifespan=app_lifespan)  
 
-app = FastAPI()  
 
 # Include routers
 app.include_router(home.router)
