@@ -1,5 +1,6 @@
 import requests
 import asyncio  # For periodic tasks
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, WebSocket
 from sqlalchemy.orm import Session
 from constants import constants
@@ -66,7 +67,10 @@ def get_source_data():
         if not API_SOURCE_DATA:
             raise HTTPException(status_code=500, detail="Source data is not available.")
 
-        return API_SOURCE_DATA
+        return {
+            "message": f"Successfully extracted data on {datetime.now()}", 
+            "data": API_SOURCE_DATA
+        }
     
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
