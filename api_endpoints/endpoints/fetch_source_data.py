@@ -1,10 +1,10 @@
 import requests
 import asyncio  # For periodic tasks
-from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, WebSocket
 from sqlalchemy.orm import Session
 from constants import constants
 from utils.database import get_db
+from utils.utils import get_current_time
 from ..endpoint_utils import endpoint_utils
 
 
@@ -68,7 +68,7 @@ def get_source_data():
             raise HTTPException(status_code=500, detail="Source data is not available.")
 
         return {
-            "message": f"Successfully extracted data on {datetime.now()}", 
+            "message": f"Successfully extracted data on {get_current_time()}", 
             "data": API_SOURCE_DATA
         }
     
