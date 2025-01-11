@@ -1,11 +1,12 @@
-import requests
+import requests, json
 import asyncio  # For periodic tasks
-from fastapi import APIRouter, HTTPException, Depends, WebSocket
+from fastapi import APIRouter, HTTPException, Depends, WebSocket,  Query
 from sqlalchemy.orm import Session
 from constants import constants
 from utils.database import get_db
 from utils.utils import get_current_time
 from ..endpoint_utils import endpoint_utils
+from models.models import StockModel
 
 
 router = APIRouter()
@@ -13,7 +14,7 @@ router = APIRouter()
 
 # Global variables
 API_SOURCE_DATA = []
-TRENDING_STOCKS = []
+FAVOURITE_STOCKS = []
 
 
 # Function to fetch data during startup
@@ -98,7 +99,23 @@ def get_trending_stocks():
 
 
 
+@router.post("/add-fav-stock")
+def add_favourite_stocks(stock: StockModel):
+    try:
+        # Parse the JSON string
+        # stock_data = json.loads(stock)
+        # stock_obj = StockModel(**stock_data)  # Validate with Pydantic model
+        FAVOURITE_STOCKS.append(stock)
+        print(">>> stock_id: ", stock.id)
+        return FAVOURITE_STOCKS
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
 
+
+
+
+
+# {"id": "bitcoin","symbol": "btc","name": "Bitcoin","image": "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400","current_price": 8371903,"market_cap": 165790242423847,"market_cap_rank": 1,"high_24h": 8457221,"low_24h": 7984591,"price_change_24h": 328609,"price_change_percentage_24h": 4.08551}
 
 
 

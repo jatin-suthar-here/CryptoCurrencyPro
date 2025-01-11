@@ -6,4 +6,3 @@ from utils.database import get_db
 from ..endpoint_utils import endpoint_utils
 
 router = APIRouter()
-
