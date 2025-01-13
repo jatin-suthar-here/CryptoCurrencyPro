@@ -45,13 +45,13 @@ stocks_table = Table(
 )
 
 # TABLE 3
-favorite_stocks_table = Table(
-    "favorite_stocks",
+favourite_stocks_table = Table(
+    "favourite_stocks",
     metadata,
     # Unique ID for the favorite entry
     Column("id", Integer, primary_key=True, autoincrement=True, nullable=False), 
     # Foreign key to stocks
-    Column("stock_id", String(100), ForeignKey("stocks.id"), nullable=False)
+    Column("stock_id", String(100), ForeignKey("stocks.id"), nullable=False, unique=True)
 
     # TODO: # Foreign key to users
     # Column("user_id", String(100), ForeignKey("users.id"), nullable=False),  
