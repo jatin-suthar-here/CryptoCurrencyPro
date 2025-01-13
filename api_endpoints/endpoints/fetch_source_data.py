@@ -100,9 +100,9 @@ def get_trending_stocks():
 
 
 @router.post("/add-fav-stock")
-def add_favourite_stocks(stock: StockModel):
+def add_favourite_stocks(stock: StockModel, db: Session = Depends(get_db)):
     try:
-        upsert_favourite_stocks_in_db(stock_data=stock, db=get_db())
+        upsert_favourite_stocks_in_db(stock_data=stock, db=db)
         FAVOURITE_STOCKS.append(stock)
         return FAVOURITE_STOCKS
     except Exception as e:
