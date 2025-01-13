@@ -52,16 +52,6 @@ def insert_api_source_data_in_db(source_data: list, db: Session):
 
 def  upsert_favourite_stocks_in_db(stock_data: StockModel, db: Session):
     try:        
-        sql_query =  """
-            INSERT INTO favourite_stocks (stock_id) 
-            VALUES (:stock_id)
-            ON CONFLICT (stock_id) 
-            DO NOTHING;
-            """
-        
-        # Upsert into favourite_stocks
-        db.execute(text(sql_query), {"stock_id": stock_data.id})
-        
         sql_query = """
             INSERT INTO stocks (
                 id, symbol, name, image, current_price, market_cap, market_cap_rank, 
@@ -99,6 +89,16 @@ def  upsert_favourite_stocks_in_db(stock_data: StockModel, db: Session):
                 "price_change_24h": stock_data.price_change_24h,
                 "price_change_percentage_24h": stock_data.price_change_percentage_24h,
             })
+        
+        sql_query =  """
+            INSERT INTO favourite_stocks (stock_id) 
+            VALUES (:stock_id)
+            ON CONFLICT (stock_id) 
+            DO NOTHING;
+            """
+        
+        # Upsert into favourite_stocks
+        db.execute(text(sql_query), {"stock_id": stock_data.id})
         
         db.commit()
         print(">>> Data inserted successfully - (upsert_favourite_stocks_in_db).")
