@@ -1,4 +1,4 @@
-from sqlalchemy import (create_engine, MetaData, Table, Column, Integer, String, 
+from sqlalchemy import (create_engine, MetaData, Table, Column, ForeignKey, Integer, String, 
     Numeric, Text, BigInteger, Float, text)
 from constants import constants
 
@@ -14,23 +14,48 @@ engine = create_engine(constants.EXTERNAL_DB_URL)
 metadata = MetaData()
 
 
-# TABLE 1
-# stocks_table = Table(
-#     "stocks",
+# TODO: Will Create Later
+# # TABLE 1
+# users_table = Table(
+#     "users",
 #     metadata,
-#     Column("id", Integer, primary_key=True, autoincrement=True),  # Primary key
-#     Column("stocks_id", String(100), nullable=False, unique=True),  # Unique stock ID
-#     Column("symbol", String(20), nullable=False),  # Stock symbol (e.g., BTC)
-#     Column("name", String(100), nullable=False),  # Stock name (e.g., Bitcoin)
-#     Column("image", String, nullable=False),  # URL for the image
-#     Column("current_price", String(100), nullable=True),  # Current price of the stock
-#     Column("market_cap", String(100), nullable=True),  # Market capitalization
-#     Column("market_cap_rank", String(100), nullable=True),  # Market cap rank
-#     Column("high_24h", String(100), nullable=True),  # Highest price in the last 24h
-#     Column("low_24h", String(100), nullable=True),  # Lowest price in the last 24h
-#     Column("price_change_24h", String(100), nullable=True),  # Absolute price change in the last 24h
-#     Column("price_change_percentage_24h", String(100), nullable=True),  # Percentage price change in the last 24h
+#     # Unique user ID
+#     # ALTERNATE OPTION : # Column("user_id", String(36), primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False),
+#     Column("id", String(100), primary_key=True, nullable=False, unique=True),  
+#     Column("username", String(50), nullable=False, unique=True),  # Username
+#     Column("email", String(100), nullable=False, unique=True),  # Email
+#     Column("password", String(100), nullable=False),  # Hashed password
 # )
+
+# TABLE 2
+stocks_table = Table(
+    "stocks",
+    metadata,
+    Column("id", String(100), primary_key=True, nullable=False, unique=True),  # Unique ID
+    Column("symbol", String(20), nullable=False),  # Stock symbol (e.g., BTC)
+    Column("name", String(100), nullable=False),  # Stock name (e.g., Bitcoin)
+    Column("image", String, nullable=False),  # URL for the image
+    Column("current_price", String(100), nullable=True),  # Current price of the stock
+    Column("market_cap", String(100), nullable=True),  # Market capitalization
+    Column("market_cap_rank", String(100), nullable=True),  # Market cap rank
+    Column("high_24h", String(100), nullable=True),  # Highest price in the last 24h
+    Column("low_24h", String(100), nullable=True),  # Lowest price in the last 24h
+    Column("price_change_24h", String(100), nullable=True),  # Absolute price change in the last 24h
+    Column("price_change_percentage_24h", String(100), nullable=True),  # Percentage price change in the last 24h
+)
+
+# TABLE 3
+favorite_stocks_table = Table(
+    "favorite_stocks",
+    metadata,
+    # Unique ID for the favorite entry
+    Column("id", Integer, primary_key=True, autoincrement=True, nullable=False), 
+    # Foreign key to stocks
+    Column("stock_id", String(100), ForeignKey("stocks.id"), nullable=False)
+
+    # TODO: # Foreign key to users
+    # Column("user_id", String(100), ForeignKey("users.id"), nullable=False),  
+)
 
 
 
@@ -64,14 +89,3 @@ def drop_database():
         print(f"An error occurred while dropping the database: {e}")
 
 
-
-
-
-
-
-
-
-
-# if __name__ == "__main__":
-#     create_tables()
-#     reset_database()

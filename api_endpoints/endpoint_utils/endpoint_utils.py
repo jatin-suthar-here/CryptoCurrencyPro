@@ -1,10 +1,11 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from models.models import StockModel
 
 
 def test(db: Session):
-    sql_query = text("""SELECT * FROM stocks WHERE stocks_id = 'bitcoin';""")
+    sql_query = text("""SELECT * FROM stocks;""")
     result = db.execute(sql_query)
     db.commit()
     
@@ -47,5 +48,65 @@ def insert_api_source_data_in_db(source_data: list, db: Session):
         db.rollback()  # Handle any other unforeseen exceptions
         print(f"Unexpected error occurred: {str(e)}")
         return {"status": "failure", "error": str(e)}
+    
+
+def  upsert_favourite_stocks_in_db(stock_data: StockModel, db: Session):
+    try:        
+        # Upsert into favourite_stocks
+        db.execute(
+            """
+            INSERT INTO favourite_stocks (stock_id) 
+            VALUES (:stock_id)
+            ON CONFLICT (stock_id) 
+            DO NOTHING;
+            """,
+            {"stock_id": stock_data.id}
+        )
+        
+        # Upsert into stocks
+        db.execute(
+            """
+            INSERT INTO stocks (
+                id, symbol, name, image, current_price, market_cap, market_cap_rank, 
+                high_24h, low_24h, price_change_24h, price_change_percentage_24h
+            ) 
+            VALUES (
+                :id, :symbol, :name, :image, :current_price, :market_cap, :market_cap_rank, 
+                :high_24h, :low_24h, :price_change_24h, :price_change_percentage_24h
+            )
+            ON CONFLICT (id) 
+            DO UPDATE SET 
+                symbol = EXCLUDED.symbol,
+                name = EXCLUDED.name,
+                image = EXCLUDED.image,
+                current_price = EXCLUDED.current_price,
+                market_cap = EXCLUDED.market_cap,
+                market_cap_rank = EXCLUDED.market_cap_rank,
+                high_24h = EXCLUDED.high_24h,
+                low_24h = EXCLUDED.low_24h,
+                price_change_24h = EXCLUDED.price_change_24h,
+                price_change_percentage_24h = EXCLUDED.price_change_percentage_24h;
+            """,
+            {
+                "id": stock_data.id,
+                "symbol": stock_data.symbol,
+                "name": stock_data.name,
+                "image": stock_data.image,
+                "current_price": stock_data.current_price,
+                "market_cap": stock_data.market_cap,
+                "market_cap_rank": stock_data.market_cap_rank,
+                "high_24h": stock_data.high_24h,
+                "low_24h": stock_data.low_24h,
+                "price_change_24h": stock_data.price_change_24h,
+                "price_change_percentage_24h": stock_data.price_change_percentage_24h,
+            }
+        )
+        
+        db.commit()
+        print(">>> Data inserted successfully - (upsert_favourite_stocks_in_db).")
+    except Exception as e:
+        db.rollback()
+        print(f"Unexpected error occurred - (upsert_favourite_stocks_in_db) : {str(e)}")
+        raise e
     
         
