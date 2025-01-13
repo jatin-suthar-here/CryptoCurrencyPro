@@ -3,6 +3,7 @@ import asyncio  # For periodic tasks
 from fastapi import APIRouter, HTTPException, Depends, WebSocket
 from sqlalchemy.orm import Session
 from constants import constants
+from utils.database import get_db
 from utils.utils import get_current_time
 from ..endpoint_utils.endpoint_utils import upsert_favourite_stocks_in_db
 from models.models import StockModel
@@ -101,11 +102,12 @@ def get_trending_stocks():
 @router.post("/add-fav-stock")
 def add_favourite_stocks(stock: StockModel):
     try:
-        upsert_favourite_stocks_in_db(stock_data=stock)
+        upsert_favourite_stocks_in_db(stock_data=stock, db=get_db())
         FAVOURITE_STOCKS.append(stock)
         return FAVOURITE_STOCKS
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
 
