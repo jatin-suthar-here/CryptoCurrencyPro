@@ -108,7 +108,7 @@ def add_favourite_stocks(stock: StockModel, db: Session = Depends(get_db)):
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
-@router.post("/remove-fav-stock")
+@router.delete("/remove-fav-stock")
 def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
     try:
         remove_favourite_stock_from_db(stock_id=stock_id, db=db)
