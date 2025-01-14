@@ -98,7 +98,6 @@ def get_trending_stocks():
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
-
 @router.post("/add-fav-stock")
 def add_favourite_stocks(stock: StockModel, db: Session = Depends(get_db)):
     try:
@@ -108,11 +107,14 @@ def add_favourite_stocks(stock: StockModel, db: Session = Depends(get_db)):
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
-@router.delete("/remove-fav-stock")
+
+# you can't directly call delete end point in browser, use curl
+# ex:  curl -X DELETE "http://0.0.0.0:8500/api/remove-fav-stock?stock_id=bitcoin"
+@router.delete("/remove-fav-stock") 
 def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
     try:
         remove_favourite_stock_from_db(stock_id=stock_id, db=db)
-        return {"message": "Data inserted successfully", "data": stock_id}
+        return {"message": "Data removed successfully", "data": stock_id}
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
