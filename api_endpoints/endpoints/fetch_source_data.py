@@ -140,3 +140,4 @@ def get_favourite_stocks(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
+
