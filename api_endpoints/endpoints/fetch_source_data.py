@@ -132,7 +132,7 @@ def get_favourite_stocks(db: Session = Depends(get_db)):
         for stock in stocks:
             list_fav.append(stock)
         return {
-            "message": "Data fetched successfully", 
+            "message": "Data fetched successfully.", 
             "data": list_fav
         }
     except Exception as e:
