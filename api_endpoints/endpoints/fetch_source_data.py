@@ -122,7 +122,7 @@ def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/get-fav-stock") 
-def remove_favourite_stocks(db: Session = Depends(get_db)):
+def get_favourite_stocks(db: Session = Depends(get_db)):
     try:
         favourite_stocks = retrieve_favourite_stocks_from_db(db=db)
         response_data = favourite_stocks.json()
