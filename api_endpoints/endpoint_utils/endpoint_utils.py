@@ -127,3 +127,24 @@ def remove_favourite_stock_from_db(stock_id: str, db: Session):
         print(f"Unexpected error occurred - (remove_favourite_stock_from_db) : {str(e)}")
         raise e
 
+
+def retrieve_favourite_stocks_from_db(db: Session):
+    try:        
+        sql_query = """
+            SELECT st.id, st.symbol, st.name, st.image, st.current_price, st.market_cap, st.market_cap_rank, 
+                st.high_24h, st.low_24h, st.price_change_24h, st.price_change_percentage_24h 
+            FROM favourite_stocks fs
+            LEFT JOIN stocks st
+            ON fs.stock_id = st.id;
+        """
+        result = db.execute(text(sql_query))
+        # Fetch all rows as dictionaries by extracting the data with column names as keys.
+        data = [dict(row._mapping) for row in result.fetchall()]
+        print(">>> Data retrieved successfully - (retrieve_favourite_stocks_from_db).")
+        return data
+    except Exception as e:
+        db.rollback()
+        print(f"Unexpected error occurred - (retrieve_favourite_stocks_from_db) : {str(e)}")
+        raise e
+    
+

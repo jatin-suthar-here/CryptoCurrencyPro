@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from constants import constants
 from utils.database import get_db
 from utils.utils import get_current_time
-from ..endpoint_utils.endpoint_utils import upsert_favourite_stock_in_db, remove_favourite_stock_from_db
+from ..endpoint_utils.endpoint_utils import (upsert_favourite_stock_in_db, remove_favourite_stock_from_db,
+    retrieve_favourite_stocks_from_db)
 from models.models import StockModel
 
 {"id":"bitcoin","symbol":"btc","name":"Bitcoin","image":"https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400","current_price":"8371903","market_cap":"165790242423847","market_cap_rank":"1","high_24h":"8457221","low_24h":"7984591","price_change_24h":"328609","price_change_percentage_24h":"4"}
@@ -115,6 +116,16 @@ def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
     try:
         remove_favourite_stock_from_db(stock_id=stock_id, db=db)
         return {"message": "Data removed successfully", "data": stock_id}
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.get("/get-fav-stock") 
+def remove_favourite_stocks(db: Session = Depends(get_db)):
+    try:
+        favourite_stocks = retrieve_favourite_stocks_from_db(db=db)
+        return favourite_stocks
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
