@@ -125,15 +125,12 @@ def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
 def get_favourite_stocks(db: Session = Depends(get_db)):
     try:
         favourite_stocks = retrieve_favourite_stocks_from_db(db=db)
-        list_fav = []
-        # stocks = [StockModel(**{k: float(v) if v.replace('.', '', 1).isdigit() else v for k, v in item.items()}) for item in favourite_stocks]
-        stocks = [StockModel.parse_obj(item) for item in favourite_stocks]
-
-        for stock in stocks:
-            list_fav.append(stock)
+        favourite_stocks_list = []
+        # converting the each dict to StockModel format...
+        favourite_stocks_list.extend(StockModel.parse_obj(item) for item in favourite_stocks)
         return {
             "message": "Data fetched successfully.", 
-            "data": list_fav
+            "data": favourite_stocks_list
         }
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
