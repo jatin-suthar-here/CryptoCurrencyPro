@@ -125,7 +125,12 @@ def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
 def remove_favourite_stocks(db: Session = Depends(get_db)):
     try:
         favourite_stocks = retrieve_favourite_stocks_from_db(db=db)
-        return {"message": "Data fetched successfully", "data": favourite_stocks}
+        response_data = favourite_stocks.json()
+        listt = []
+        return {
+            "message": "Data fetched successfully", 
+            "data": listt.extend(response_data)
+        }
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
