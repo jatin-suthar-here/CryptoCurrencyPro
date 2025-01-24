@@ -130,3 +130,4 @@ def remove_favourite_stocks(db: Session = Depends(get_db)):
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
+
