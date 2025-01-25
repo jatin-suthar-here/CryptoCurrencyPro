@@ -132,7 +132,8 @@ def retrieve_favourite_stocks_from_db(db: Session):
     try:        
         sql_query = """
             SELECT st.id, st.symbol, st.name, st.image, st.current_price, st.market_cap, st.market_cap_rank, 
-                st.high_24h, st.low_24h, st.price_change_24h, st.price_change_percentage_24h 
+                st.high_24h, st.low_24h, st.price_change_24h, st.price_change_percentage_24h,
+                fs.id AS fav_id
             FROM favourite_stocks fs
             LEFT JOIN stocks st
             ON fs.stock_id = st.id

@@ -7,7 +7,7 @@ from utils.database import get_db
 from utils.utils import get_current_time
 from ..endpoint_utils.endpoint_utils import (upsert_favourite_stock_in_db, remove_favourite_stock_from_db,
     retrieve_favourite_stocks_from_db)
-from models.models import StockModel
+from models.models import StockModel, FavStockModel
 
 {"id":"bitcoin","symbol":"btc","name":"Bitcoin","image":"https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400","current_price":"8371903","market_cap":"165790242423847","market_cap_rank":"1","high_24h":"8457221","low_24h":"7984591","price_change_24h":"328609","price_change_percentage_24h":"4"}
 router = APIRouter()
@@ -106,7 +106,7 @@ def get_favourite_stocks(db: Session = Depends(get_db)):
         favourite_stocks = retrieve_favourite_stocks_from_db(db=db)
         favourite_stocks_list = []
         # converting the each dict to StockModel format...
-        favourite_stocks_list.extend(StockModel.parse_obj(item) for item in favourite_stocks)
+        favourite_stocks_list.extend(FavStockModel.parse_obj(item) for item in favourite_stocks)
         return {
             "message": "Data fetched successfully.", 
             "data": favourite_stocks_list
