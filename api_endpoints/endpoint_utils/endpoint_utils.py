@@ -135,7 +135,8 @@ def retrieve_favourite_stocks_from_db(db: Session):
                 st.high_24h, st.low_24h, st.price_change_24h, st.price_change_percentage_24h 
             FROM favourite_stocks fs
             LEFT JOIN stocks st
-            ON fs.stock_id = st.id;
+            ON fs.stock_id = st.id
+            ORDER BY fs.id ; 
         """
         result = db.execute(text(sql_query))
         # Fetch all rows as dictionaries by extracting the data with column names as keys.

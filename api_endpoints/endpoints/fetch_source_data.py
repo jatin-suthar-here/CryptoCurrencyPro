@@ -99,6 +99,23 @@ def get_trending_stocks():
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
+
+@router.get("/get-fav-stock") 
+def get_favourite_stocks(db: Session = Depends(get_db)):
+    try:
+        favourite_stocks = retrieve_favourite_stocks_from_db(db=db)
+        favourite_stocks_list = []
+        # converting the each dict to StockModel format...
+        favourite_stocks_list.extend(StockModel.parse_obj(item) for item in favourite_stocks)
+        return {
+            "message": "Data fetched successfully.", 
+            "data": favourite_stocks_list
+        }
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
 @router.post("/add-fav-stock")
 def add_favourite_stocks(stock: StockModel, db: Session = Depends(get_db)):
     try:
@@ -116,22 +133,6 @@ def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
     try:
         remove_favourite_stock_from_db(stock_id=stock_id, db=db)
         return {"message": "Data removed successfully", "data": stock_id}
-    except Exception as e:
-        print(f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-
-
-@router.get("/get-fav-stock") 
-def get_favourite_stocks(db: Session = Depends(get_db)):
-    try:
-        favourite_stocks = retrieve_favourite_stocks_from_db(db=db)
-        favourite_stocks_list = []
-        # converting the each dict to StockModel format...
-        favourite_stocks_list.extend(StockModel.parse_obj(item) for item in favourite_stocks)
-        return {
-            "message": "Data fetched successfully.", 
-            "data": favourite_stocks_list
-        }
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
