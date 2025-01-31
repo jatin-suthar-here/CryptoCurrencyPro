@@ -11,7 +11,8 @@ URL_PARAMS = {
     "order": "market_cap_desc",
     "per_page": "50",
     "page": "1",
-    "price_change_percentage": "24h"
+    "price_change_percentage": "24h",
+    "sparkline": "true"
 }
 
 

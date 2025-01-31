@@ -1,4 +1,4 @@
-from sqlalchemy import (create_engine, MetaData, Table, Column, ForeignKey, Integer, String, 
+from sqlalchemy import (create_engine, MetaData, Table, Column, ForeignKey, Integer, String, JSON,
     Numeric, Text, BigInteger, Float, text)
 from constants import constants
 
@@ -42,6 +42,7 @@ stocks_table = Table(
     Column("low_24h", String(100), nullable=True),  # Lowest price in the last 24h
     Column("price_change_24h", String(100), nullable=True),  # Absolute price change in the last 24h
     Column("price_change_percentage_24h", String(100), nullable=True),  # Percentage price change in the last 24h
+    Column("sparkline", JSON, nullable=True),  # Percentage price change in the last 24h
 )
 
 # TABLE 3

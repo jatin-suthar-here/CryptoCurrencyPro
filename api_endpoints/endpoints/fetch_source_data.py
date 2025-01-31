@@ -9,7 +9,6 @@ from ..endpoint_utils.endpoint_utils import (upsert_favourite_stock_in_db, remov
     retrieve_favourite_stocks_from_db)
 from models.models import StockModel, FavStockModel
 
-{"id":"bitcoin","symbol":"btc","name":"Bitcoin","image":"https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400","current_price":"8371903","market_cap":"165790242423847","market_cap_rank":"1","high_24h":"8457221","low_24h":"7984591","price_change_24h":"328609","price_change_percentage_24h":"4"}
 router = APIRouter()
 
 

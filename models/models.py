@@ -13,6 +13,7 @@ class StockModel(BaseModel):
     low_24h: Optional[float] = None
     price_change_24h: Optional[float] = None
     price_change_percentage_24h: Optional[float] = None
+    sparkline: Optional[list] = None
 
 class FavStockModel(BaseModel):
     id: str
@@ -26,4 +27,5 @@ class FavStockModel(BaseModel):
     low_24h: Optional[float] = None
     price_change_24h: Optional[float] = None
     price_change_percentage_24h: Optional[float] = None
+    sparkline: Optional[list] = None
     fav_id: int
