@@ -107,7 +107,7 @@ def get_trending_stocks():
             raise HTTPException(status_code=500, detail="Source data is not available.")
         
         trending_data = API_SOURCE_DATA.copy()
-        trending_data.sort(key=lambda stock : float(stock["price_change_percentage_24h"]), reverse=True)
+        trending_data.sort(key=lambda stock : float(stock.price_change_percentage_24h), reverse=True)
         
         return trending_data[:10]
     
