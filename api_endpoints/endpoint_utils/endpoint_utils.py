@@ -73,7 +73,7 @@ def upsert_favourite_stock_in_db(stock_data: StockModel, db: Session):
                 high_24h = EXCLUDED.high_24h,
                 low_24h = EXCLUDED.low_24h,
                 price_change_24h = EXCLUDED.price_change_24h,
-                price_change_percentage_24h = EXCLUDED.price_change_percentage_24h;
+                price_change_percentage_24h = EXCLUDED.price_change_percentage_24h,
                 sparkline = EXCLUDED.sparkline;
         """
         # Upsert into stocks
