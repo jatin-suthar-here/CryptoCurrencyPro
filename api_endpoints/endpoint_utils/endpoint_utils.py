@@ -49,16 +49,18 @@ def insert_api_source_data_in_db(source_data: list, db: Session):
         return {"status": "failure", "error": str(e)}
     
 
+
+# # main functions
 def upsert_favourite_stock_in_db(stock_data: StockModel, db: Session):
     try:        
         sql_query = """
             INSERT INTO stocks (
                 id, symbol, name, image, current_price, market_cap, market_cap_rank, 
-                high_24h, low_24h, price_change_24h, price_change_percentage_24h
+                high_24h, low_24h, price_change_24h, price_change_percentage_24h, sparkline
             ) 
             VALUES (
                 :id, :symbol, :name, :image, :current_price, :market_cap, :market_cap_rank, 
-                :high_24h, :low_24h, :price_change_24h, :price_change_percentage_24h
+                :high_24h, :low_24h, :price_change_24h, :price_change_percentage_24h, :sparkline
             )
             ON CONFLICT (id) 
             DO UPDATE SET 
@@ -72,6 +74,7 @@ def upsert_favourite_stock_in_db(stock_data: StockModel, db: Session):
                 low_24h = EXCLUDED.low_24h,
                 price_change_24h = EXCLUDED.price_change_24h,
                 price_change_percentage_24h = EXCLUDED.price_change_percentage_24h;
+                sparkline = EXCLUDED.sparkline;
         """
         # Upsert into stocks
         db.execute(text(sql_query),
@@ -87,6 +90,7 @@ def upsert_favourite_stock_in_db(stock_data: StockModel, db: Session):
                 "low_24h": stock_data.low_24h,
                 "price_change_24h": stock_data.price_change_24h,
                 "price_change_percentage_24h": stock_data.price_change_percentage_24h,
+                "sparkline": stock_data.sparkline
             })
         
         sql_query = """
@@ -132,7 +136,7 @@ def retrieve_favourite_stocks_from_db(db: Session):
     try:        
         sql_query = """
             SELECT st.id, st.symbol, st.name, st.image, st.current_price, st.market_cap, st.market_cap_rank, 
-                st.high_24h, st.low_24h, st.price_change_24h, st.price_change_percentage_24h,
+                st.high_24h, st.low_24h, st.price_change_24h, st.price_change_percentage_24h, st.sparkline,
                 fs.id AS fav_id
             FROM favourite_stocks fs
             LEFT JOIN stocks st
