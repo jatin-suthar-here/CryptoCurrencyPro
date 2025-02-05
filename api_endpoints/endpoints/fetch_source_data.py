@@ -157,5 +157,5 @@ def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
 
 @router.get("/get-test") 
 def get_test(db: Session = Depends(get_db)):
-    return test()
+    return test(db=db)
 
