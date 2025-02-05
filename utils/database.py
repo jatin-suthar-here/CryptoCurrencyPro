@@ -16,9 +16,9 @@ print(">>> DATABASE_URL :", DATABASE_URL)
 
 
 # Create SQLAlchemy engine and session
-engine = create_engine(DATABASE_URL)
+# engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, connect_args={"sslmode": "require"})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 # Dependency to get DB session
 def get_db():
     db = SessionLocal()
