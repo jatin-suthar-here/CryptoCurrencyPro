@@ -84,7 +84,8 @@ def get_source_data():
     """
     try:
         if not API_SOURCE_DATA:
-            raise HTTPException(status_code=500, detail="Source data is not available.")
+            fetch_source_data_from_api()
+            # raise HTTPException(status_code=500, detail="Source data is not available.")
 
         return {
             "message": f"Successfully extracted data on {get_current_time()}", 
