@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-from constants import constants
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
