@@ -38,7 +38,7 @@ async def fetch_source_data_from_api():
             response_data = json.loads(content)  # Parse JSON
         
         formatted_data = []
-        for item in response_data[::-1][:10]:
+        for item in response_data:
             stock = StockModel(
                 id=item["id"],
                 symbol=item["symbol"],
