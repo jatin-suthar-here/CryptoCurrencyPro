@@ -24,8 +24,8 @@ async def app_lifespan(app: FastAPI):
 
 
 # Pass the lifespan function to FastAPI
-# app = FastAPI(lifespan=app_lifespan)  
-app = FastAPI()  
+app = FastAPI(lifespan=app_lifespan)  
+# app = FastAPI()  
 
 
 # Include routers
