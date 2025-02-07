@@ -33,7 +33,7 @@ async def fetch_source_data_from_api():
         """ Fetching data from static json file present on local """
         # NOTE:  since this function is 'async' it will run in backgoround, but using normal open() method to read data from file will make this function work as 'sync' function (normal func) because file I/O is a blocking operation in Python.
         # So using 'aiofiles.open' will make file I/O a non-blocking operaion.
-        async with aiofiles.open("api_data.json", "r") as file:
+        async with aiofiles.open("api_data_test.json", "r") as file:
             content = await file.read()  # Read file asynchronously
             response_data = json.loads(content)  # Parse JSON
         
