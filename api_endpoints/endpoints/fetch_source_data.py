@@ -84,44 +84,44 @@ def get_source_data():
     """
     try:
         if not API_SOURCE_DATA:
-            # try:    
-            #     response = requests.get(constants.COINGECKO_API_URL, params=constants.URL_PARAMS)
-            #     response.raise_for_status()  # Raise an HTTPError if the response status is 4xx/5xx
-            #     response_data = response.json()
+            try:    
+                response = requests.get(constants.COINGECKO_API_URL, params=constants.URL_PARAMS)
+                response.raise_for_status()  # Raise an HTTPError if the response status is 4xx/5xx
+                response_data = response.json()
                 
-            #     formatted_data = []
-            #     for item in response_data:
-            #         stock = StockModel(
-            #             id=item["id"],
-            #             symbol=item["symbol"],
-            #             name=item["name"],
-            #             image=item.get("image"),
-            #             current_price=item.get("current_price"),
-            #             market_cap=item.get("market_cap"),
-            #             market_cap_rank=item.get("market_cap_rank"),
-            #             high_24h=item.get("high_24h"),
-            #             low_24h=item.get("low_24h"),
-            #             price_change_24h=item.get("price_change_24h"),
-            #             price_change_percentage_24h=item.get("price_change_percentage_24h"),
-            #             sparkline=item["sparkline_in_7d"]["price"] if "sparkline_in_7d" in item else None
-            #         )
-            #         formatted_data.append(stock)
+                formatted_data = []
+                for item in response_data:
+                    stock = StockModel(
+                        id=item["id"],
+                        symbol=item["symbol"],
+                        name=item["name"],
+                        image=item.get("image"),
+                        current_price=item.get("current_price"),
+                        market_cap=item.get("market_cap"),
+                        market_cap_rank=item.get("market_cap_rank"),
+                        high_24h=item.get("high_24h"),
+                        low_24h=item.get("low_24h"),
+                        price_change_24h=item.get("price_change_24h"),
+                        price_change_percentage_24h=item.get("price_change_percentage_24h"),
+                        sparkline=item["sparkline_in_7d"]["price"] if "sparkline_in_7d" in item else None
+                    )
+                    formatted_data.append(stock)
 
-            #     # Populate the global variable
-            #     API_SOURCE_DATA.extend(formatted_data) # Use extend to add items directly
+                # Populate the global variable
+                API_SOURCE_DATA.extend(formatted_data) # Use extend to add items directly
                 
-            #     print(">>> API_SOURCE_DATA populated - Length:", len(API_SOURCE_DATA))
+                print(">>> API_SOURCE_DATA populated - Length:", len(API_SOURCE_DATA))
             
-            # except requests.exceptions.RequestException as e:
-            #     print(f"API request failed during startup: {str(e)}")
-            #     raise HTTPException(status_code=502, detail=f"API request failed during startup: {str(e)}")
+            except requests.exceptions.RequestException as e:
+                print(f"API request failed during startup: {str(e)}")
+                raise HTTPException(status_code=502, detail=f"API request failed during startup: {str(e)}")
 
-            # except Exception as e:
-            #     print(f"Unexpected error during startup: {str(e)}")
-            #     raise HTTPException(status_code=500, detail=f"Unexpected error during startup: {str(e)}")
+            except Exception as e:
+                print(f"Unexpected error during startup: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Unexpected error during startup: {str(e)}")
             
-            # if not API_SOURCE_DATA:
-            raise HTTPException(status_code=500, detail="Source data is not available.")
+            if not API_SOURCE_DATA:
+                raise HTTPException(status_code=500, detail="Source data is not available.")
 
         for i in API_SOURCE_DATA[:10]:
             print(i.name, type(i))
