@@ -7,7 +7,7 @@ from constants import constants
 from utils.database import get_db
 from utils.utils import get_current_time
 from ..endpoint_utils.endpoint_utils import (upsert_favourite_stock_in_db, remove_favourite_stock_from_db,
-    retrieve_favourite_stocks_from_db, test)
+    retrieve_favourite_stocks_from_db, check_is_stock_favourite_from_db)
 from models.models import StockModel, FavStockModel
 
 router = APIRouter()
@@ -164,13 +164,10 @@ def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
-@router.get("/get-test") 
-def get_test(db: Session = Depends(get_db)):
-    try:
-        a = test(db=db)
-        print("a : ", a)
-        return a
-    except Exception as e:
-        print("EXC : ", e)
+@router.get("/check-fav-stock")
+def check_is_stock_favourite(stock_id: str, db: Session = Depends(get_db)):
+    data = check_is_stock_favourite_from_db(stock_id=stock_id, db=db)
+    return {"message": "Data checked successfully", "data": data}
+
 
 

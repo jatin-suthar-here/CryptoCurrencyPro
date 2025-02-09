@@ -154,3 +154,15 @@ def retrieve_favourite_stocks_from_db(db: Session):
         raise e
     
 
+def check_is_stock_favourite_from_db(stock_id: str, db: Session):
+    try:        
+        sql_query = """ SELECT 1 FROM favourite_stocks WHERE stock_id = :stock_id """
+        result = db.execute(text(sql_query), {"stock_id": stock_id})
+        exists = result.fetchone() is not None
+        print(">>> Data Checked successfully - (check_is_stock_favourite_from_db).")
+        return exists
+    except Exception as e:
+        db.rollback()
+        print(f"Unexpected error occurred - (check_is_stock_favourite_from_db) : {str(e)}")
+        raise e
+
