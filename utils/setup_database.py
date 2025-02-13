@@ -1,5 +1,7 @@
-from sqlalchemy import (create_engine, MetaData, Table, Column, ForeignKey, Integer, String, ARRAY,
-    Numeric, Text, BigInteger, Float, text)
+from datetime import datetime, timezone
+from sqlalchemy import (create_engine, MetaData, Table, Column, ForeignKey, Integer, String,
+    DateTime, ARRAY, Enum, Numeric, Text, BigInteger, Float, text)
+from enum import Enum as PyEnum
 from constants import constants
 
 """
@@ -12,6 +14,17 @@ engine = create_engine(constants.EXTERNAL_DB_URL)
 
 # Define metadata object for holding the schema
 metadata = MetaData()
+
+
+# Define Enums
+class TransactionType(PyEnum):
+    BUY = "buy"
+    SELL = "sell"
+
+class TransactionStatus(PyEnum):
+    PROFIT = "profit"
+    LOSS = "loss"
+    NEUTRAL = "neutral"
 
 
 # TODO: Will Create Later
@@ -58,6 +71,20 @@ favourite_stocks_table = Table(
     # Column("user_id", String(100), ForeignKey("users.id"), nullable=False),  
 )
 
+# TABLE 4
+transaction_table = Table(
+    "transactions",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True, nullable=False), 
+    Column("stock_id", String(100), ForeignKey("stocks.id"), nullable=False), 
+        # Removed unique=True - This means each stock can only have one transaction, which is incorrect 
+        # because A single stock can have multiple transactions (buying, selling at different times).
+    Column("quantity", Integer, nullable=True),
+    Column("price_at_transaction", String(100), nullable=True),
+    Column("timestamp", DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)),  # Use DateTime
+    Column("type", Enum(TransactionType), nullable=False),  # Using Enum for buy/sell
+    Column("status", Enum(TransactionStatus), nullable=False)  # Using Enum for profit/loss/neutral
+)
 
 
 

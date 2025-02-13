@@ -29,3 +29,6 @@ class FavStockModel(BaseModel):
     price_change_percentage_24h: Optional[float] = None
     sparkline: Optional[list] = None
     fav_id: int
+
+
+# class TransactionStockModel

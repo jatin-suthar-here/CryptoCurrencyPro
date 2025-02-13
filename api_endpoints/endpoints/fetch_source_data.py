@@ -170,4 +170,9 @@ def check_is_stock_favourite(stock_id: str, db: Session = Depends(get_db)):
     return {"message": "Data checked successfully", "data": data}
 
 
+@router.post("/buy-stock")
+def buy_stocks(stock: StockModel, db: Session = Depends(get_db)):
+    pass
+
+
 
