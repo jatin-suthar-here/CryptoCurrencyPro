@@ -16,21 +16,21 @@ URL_PARAMS = {
 }
 
 
-### DataBase Configurations
-### [Render's PostgreSQL DB] 
-HOSTNAME = "dpg-cuhpjsqn91rc73c6bkn0-a"
-DATABASE = "cryptocurrencyprodb_2"
-USERNAME = "cryptocurrencyprodb_2_user"
-PASSWORD = "x2Nbj6K0YousQhsMr89uCAKWjrRdyx0q"
-INTERNAL_DB_URL = "postgresql://cryptocurrencyprodb_2_user:x2Nbj6K0YousQhsMr89uCAKWjrRdyx0q@dpg-cuhpjsqn91rc73c6bkn0-a/cryptocurrencyprodb_2"
-EXTERNAL_DB_URL = "postgresql://cryptocurrencyprodb_2_user:x2Nbj6K0YousQhsMr89uCAKWjrRdyx0q@dpg-cuhpjsqn91rc73c6bkn0-a.oregon-postgres.render.com/cryptocurrencyprodb_2"
-PSQL_CMD = "PGPASSWORD=x2Nbj6K0YousQhsMr89uCAKWjrRdyx0q psql -h dpg-cuhpjsqn91rc73c6bkn0-a.oregon-postgres.render.com -U cryptocurrencyprodb_2_user cryptocurrencyprodb_2"
+# ### DataBase Configurations
+# ### [Render's PostgreSQL DB] 
+# HOSTNAME = "dpg-cuhpjsqn91rc73c6bkn0-a"
+# DATABASE = "cryptocurrencyprodb_2"
+# USERNAME = "cryptocurrencyprodb_2_user"
+# PASSWORD = "x2Nbj6K0YousQhsMr89uCAKWjrRdyx0q"
+# INTERNAL_DB_URL = "postgresql://cryptocurrencyprodb_2_user:x2Nbj6K0YousQhsMr89uCAKWjrRdyx0q@dpg-cuhpjsqn91rc73c6bkn0-a/cryptocurrencyprodb_2"
+# EXTERNAL_DB_URL = "postgresql://cryptocurrencyprodb_2_user:x2Nbj6K0YousQhsMr89uCAKWjrRdyx0q@dpg-cuhpjsqn91rc73c6bkn0-a.oregon-postgres.render.com/cryptocurrencyprodb_2"
+# PSQL_CMD = "PGPASSWORD=x2Nbj6K0YousQhsMr89uCAKWjrRdyx0q psql -h dpg-cuhpjsqn91rc73c6bkn0-a.oregon-postgres.render.com -U cryptocurrencyprodb_2_user cryptocurrencyprodb_2"
 
 
-# ### [Supabase's PostgreSQL DB]
-# PSQL_CMD = "psql -h db.ocejkqvmwchksbeujgrk.supabase.co -p 5432 -d postgres -U postgres"
-# PASSWORD = "J83027::11S"
-# INTERNAL_DB_URL = f"postgresql://postgres:{PASSWORD}@db.ocejkqvmwchksbeujgrk.supabase.co:5432/postgres"
-# EXTERNAL_DB_URL = f"postgresql://postgres:{PASSWORD}@db.ocejkqvmwchksbeujgrk.supabase.co:5432/postgres"
+### [Supabase's PostgreSQL DB]
+PSQL_CMD = "psql -h db.ocejkqvmwchksbeujgrk.supabase.co -p 5432 -d postgres -U postgres"
+PASSWORD = "J83027::11S"
+INTERNAL_DB_URL = "postgresql://postgres.ocejkqvmwchksbeujgrk:J83027::11S@aws-0-ap-south-1.pooler.supabase.com:5432/postgres"
+EXTERNAL_DB_URL = "postgresql://postgres.ocejkqvmwchksbeujgrk:J83027::11S@aws-0-ap-south-1.pooler.supabase.com:5432/postgres"
 
 
