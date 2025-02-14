@@ -1,4 +1,6 @@
+from datetime import datetime
 from pydantic import BaseModel
+from enum import Enum as PyEnum
 from typing import Optional
 
 class StockModel(BaseModel):
@@ -31,4 +33,23 @@ class FavStockModel(BaseModel):
     fav_id: int
 
 
-# class TransactionStockModel
+
+class TransactionType(PyEnum):
+    BUY = "buy"
+    SELL = "sell"
+
+class TransactionStatus(PyEnum):
+    PROFIT = "profit"
+    LOSS = "loss"
+    NEUTRAL = "neutral"
+
+class TransactionStockModel(BaseModel):
+    id: int
+    stock_id: str
+    quantity: int
+    type: TransactionType
+    status: TransactionStatus
+    price_at_transaction: float
+    timestamp: datetime
+
+

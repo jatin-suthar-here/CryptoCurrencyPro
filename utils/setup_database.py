@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from sqlalchemy import (create_engine, MetaData, Table, Column, ForeignKey, Integer, String,
     DateTime, ARRAY, Enum, Numeric, Text, BigInteger, Float, text)
 from enum import Enum as PyEnum
+from models.models import TransactionStatus, TransactionType
 from constants import constants
 
 """
@@ -16,18 +17,7 @@ engine = create_engine(constants.EXTERNAL_DB_URL)
 metadata = MetaData()
 
 
-# Define Enums
-class TransactionType(PyEnum):
-    BUY = "buy"
-    SELL = "sell"
-
-class TransactionStatus(PyEnum):
-    PROFIT = "profit"
-    LOSS = "loss"
-    NEUTRAL = "neutral"
-
-
-# TODO: Will Create Later
+# # TODO: Will Create Later
 # # TABLE 1
 # users_table = Table(
 #     "users",
@@ -80,10 +70,10 @@ transaction_table = Table(
         # Removed unique=True - This means each stock can only have one transaction, which is incorrect 
         # because A single stock can have multiple transactions (buying, selling at different times).
     Column("quantity", Integer, nullable=True),
-    Column("price_at_transaction", String(100), nullable=True),
-    Column("timestamp", DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)),  # Use DateTime
     Column("type", Enum(TransactionType), nullable=False),  # Using Enum for buy/sell
-    Column("status", Enum(TransactionStatus), nullable=False)  # Using Enum for profit/loss/neutral
+    Column("status", Enum(TransactionStatus), nullable=False),  # Using Enum for profit/loss/neutral
+    Column("price_at_transaction", String(100), nullable=True),
+    Column("timestamp", DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)) 
 )
 
 
