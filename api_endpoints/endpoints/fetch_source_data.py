@@ -9,13 +9,31 @@ from utils.utils import get_current_time
 from ..endpoint_utils.endpoint_utils import (upsert_favourite_stock_in_db, remove_favourite_stock_from_db,
     retrieve_favourite_stocks_from_db, check_is_stock_favourite_from_db)
 from models.models import StockModel, FavStockModel
+from typing import Dict, List
 
 router = APIRouter()
 
 
 # Global variables
-API_SOURCE_DATA = []
+API_SOURCE_DATA: Dict[str, StockModel] = {} # Dictionary to store stock data with stock_id as key
 
+
+
+
+# --------------------------------------------------------------------------
+# Periodically fetch source data
+async def periodic_fetch_data():
+    """
+    Periodically call `fetch_source_data_from_api` to update API_SOURCE_DATA.
+    """
+    while True:
+        try:
+            await fetch_source_data_from_api()  # Reuse the populate function
+        except Exception as e:
+            print(f"Error during periodic fetch: {str(e)}")
+
+        # Wait for 15 minutes before the next fetch
+        await asyncio.sleep(15 * 60)
 
 # Function to fetch data during startup
 async def fetch_source_data_from_api():
@@ -36,7 +54,6 @@ async def fetch_source_data_from_api():
             content = await file.read()  # Read file asynchronously
             response_data = json.loads(content)  # Parse JSON
         
-        formatted_data = []
         for item in response_data:
             stock = StockModel(
                 id=item["id"],
@@ -52,11 +69,8 @@ async def fetch_source_data_from_api():
                 price_change_percentage_24h=item.get("price_change_percentage_24h"),
                 sparkline=item["sparkline_in_7d"]["price"] if "sparkline_in_7d" in item else None
             )
-            formatted_data.append(stock)
+            API_SOURCE_DATA[stock.id] = stock            
 
-        # Populate the global variable
-        API_SOURCE_DATA.extend(formatted_data) # Use extend to add items directly
-        
         print(">>> API_SOURCE_DATA populated - Length:", len(API_SOURCE_DATA))
     
     except requests.exceptions.RequestException as e:
@@ -66,24 +80,12 @@ async def fetch_source_data_from_api():
     except Exception as e:
         print(f"Unexpected error during startup: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error during startup: {str(e)}")
-
-
-# Periodically fetch source data
-async def periodic_fetch_data():
-    """
-    Periodically call `fetch_source_data_from_api` to update API_SOURCE_DATA.
-    """
-    while True:
-        try:
-            await fetch_source_data_from_api()  # Reuse the populate function
-        except Exception as e:
-            print(f"Error during periodic fetch: {str(e)}")
-
-        # Wait for 15 minutes before the next fetch
-        await asyncio.sleep(15 * 60)
+# --------------------------------------------------------------------------
 
 
 
+
+# --------------------------------------------------------------------------
 @router.get("/fetch-source-data")
 def get_source_data():
     """
@@ -114,17 +116,20 @@ def get_trending_stocks():
         if not API_SOURCE_DATA:
             raise HTTPException(status_code=500, detail="Source data is not available.")
         
-        trending_data = API_SOURCE_DATA.copy()
-        trending_data.sort(key=lambda stock : float(stock.price_change_percentage_24h), reverse=True)
-        
-        return trending_data[:10]
+        # Sorting the dictionary based on keys (stock_id)
+        trending_data = dict(sorted(API_SOURCE_DATA.items()))
+
+        return [i for i in trending_data.values()][:10]
     
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+# --------------------------------------------------------------------------
 
 
 
+
+# --------------------------------------------------------------------------
 @router.get("/get-fav-stock") 
 def get_favourite_stocks(db: Session = Depends(get_db)):
     try:
@@ -167,11 +172,15 @@ def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
 def check_is_stock_favourite(stock_id: str, db: Session = Depends(get_db)):
     data = check_is_stock_favourite_from_db(stock_id=stock_id, db=db)
     return {"message": "Data checked successfully", "data": data}
+# --------------------------------------------------------------------------
 
 
+
+
+# --------------------------------------------------------------------------
 @router.post("/buy-stock")
 def buy_stocks(stock: StockModel, db: Session = Depends(get_db)):
     pass
 
 
-
+# --------------------------------------------------------------------------
