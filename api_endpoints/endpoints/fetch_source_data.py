@@ -15,7 +15,6 @@ router = APIRouter()
 
 # Global variables
 API_SOURCE_DATA = []
-FAVOURITE_STOCKS = []
 
 
 # Function to fetch data during startup
