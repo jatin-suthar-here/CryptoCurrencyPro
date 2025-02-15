@@ -30,23 +30,23 @@ metadata = MetaData()
 #     Column("password", String(100), nullable=False),  # Hashed password
 # )
 
-# TABLE 2
-stocks_table = Table(
-    "stocks",
-    metadata,
-    Column("id", String(100), primary_key=True, nullable=False, unique=True),  # Unique ID
-    Column("symbol", String(20), nullable=False),  # Stock symbol (e.g., BTC)
-    Column("name", String(100), nullable=False),  # Stock name (e.g., Bitcoin)
-    Column("image", String, nullable=False),  # URL for the image
-    Column("current_price", String(100), nullable=True),  # Current price of the stock
-    Column("market_cap", String(100), nullable=True),  # Market capitalization
-    Column("market_cap_rank", String(100), nullable=True),  # Market cap rank
-    Column("high_24h", String(100), nullable=True),  # Highest price in the last 24h
-    Column("low_24h", String(100), nullable=True),  # Lowest price in the last 24h
-    Column("price_change_24h", String(100), nullable=True),  # Absolute price change in the last 24h
-    Column("price_change_percentage_24h", String(100), nullable=True),  # Percentage price change in the last 24h
-    Column("sparkline", ARRAY(Float), nullable=True),  # Percentage price change in the last 24h
-)
+# # NOTE: [NOT NEEDED] TABLE 2
+# stocks_table = Table(
+#     "stocks",
+#     metadata,
+#     Column("id", String(100), primary_key=True, nullable=False, unique=True),  # Unique ID
+#     Column("symbol", String(20), nullable=False),  # Stock symbol (e.g., BTC)
+#     Column("name", String(100), nullable=False),  # Stock name (e.g., Bitcoin)
+#     Column("image", String, nullable=False),  # URL for the image
+#     Column("current_price", String(100), nullable=True),  # Current price of the stock
+#     Column("market_cap", String(100), nullable=True),  # Market capitalization
+#     Column("market_cap_rank", String(100), nullable=True),  # Market cap rank
+#     Column("high_24h", String(100), nullable=True),  # Highest price in the last 24h
+#     Column("low_24h", String(100), nullable=True),  # Lowest price in the last 24h
+#     Column("price_change_24h", String(100), nullable=True),  # Absolute price change in the last 24h
+#     Column("price_change_percentage_24h", String(100), nullable=True),  # Percentage price change in the last 24h
+#     Column("sparkline", ARRAY(Float), nullable=True),  # Percentage price change in the last 24h
+# )
 
 # TABLE 3
 favourite_stocks_table = Table(
@@ -55,8 +55,7 @@ favourite_stocks_table = Table(
     # Unique ID for the favorite entry
     Column("id", Integer, primary_key=True, autoincrement=True, nullable=False), 
     # Foreign key to stocks
-    Column("stock_id", String(100), ForeignKey("stocks.id"), nullable=False, unique=True)
-
+    Column("stock_id", String(100), nullable=False, unique=True)
     # TODO: # Foreign key to users
     # Column("user_id", String(100), ForeignKey("users.id"), nullable=False),  
 )
@@ -66,7 +65,7 @@ transaction_table = Table(
     "transactions",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True, nullable=False), 
-    Column("stock_id", String(100), ForeignKey("stocks.id"), nullable=False), 
+    Column("stock_id", String(100), nullable=False), 
         # Removed unique=True - This means each stock can only have one transaction, which is incorrect 
         # because A single stock can have multiple transactions (buying, selling at different times).
     Column("quantity", Integer, nullable=True),

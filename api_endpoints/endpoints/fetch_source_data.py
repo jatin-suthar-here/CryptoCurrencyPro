@@ -136,7 +136,13 @@ def get_favourite_stocks(db: Session = Depends(get_db)):
         favourite_stocks = retrieve_favourite_stocks_from_db(db=db)
         favourite_stocks_list = []
         # converting the each dict to StockModel format...
-        favourite_stocks_list.extend(FavStockModel.parse_obj(item) for item in favourite_stocks)
+        if not API_SOURCE_DATA:
+            raise HTTPException(status_code=500, detail="Source data is not available.")
+        
+        favourite_stocks_list.extend(
+            FavStockModel(**API_SOURCE_DATA[item["stock_id"]].dict(), fav_id=int(item["id"])) for item in favourite_stocks
+            # Converts all the API_SOURCE_DATA elements to dict + Add fav_id, and map all to FavStockModel.
+        )
         return {
             "message": "Data fetched successfully.", 
             "data": favourite_stocks_list
@@ -147,22 +153,32 @@ def get_favourite_stocks(db: Session = Depends(get_db)):
 
 
 @router.post("/add-fav-stock")
-def add_favourite_stocks(stock: StockModel, db: Session = Depends(get_db)):
+def add_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
+    """
+    Ex:  curl -X POST "http://0.0.0.0:8500/api/add-fav-stock?stock_id=bitcoin"
+    """
     try:
-        upsert_favourite_stock_in_db(stock_data=stock, db=db)
-        return {"message": "Data inserted successfully", "data": stock}
+        upsert_favourite_stock_in_db(stock_id=stock_id, db=db)
+        return {
+            "message": "Data inserted successfully", 
+            "data": stock_id
+        }
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
-# you can't directly call delete end point in browser, use curl
-# ex:  curl -X DELETE "http://0.0.0.0:8500/api/remove-fav-stock?stock_id=bitcoin"
 @router.delete("/remove-fav-stock") 
 def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
+    """
+    Ex:  curl -X DELETE "http://0.0.0.0:8500/api/remove-fav-stock?stock_id=bitcoin"
+    """
     try:
         remove_favourite_stock_from_db(stock_id=stock_id, db=db)
-        return {"message": "Data removed successfully", "data": stock_id}
+        return {
+            "message": "Data removed successfully", 
+            "data": stock_id
+        }
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
@@ -171,7 +187,10 @@ def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
 @router.get("/check-fav-stock")
 def check_is_stock_favourite(stock_id: str, db: Session = Depends(get_db)):
     data = check_is_stock_favourite_from_db(stock_id=stock_id, db=db)
-    return {"message": "Data checked successfully", "data": data}
+    return {
+        "message": "Data checked successfully", 
+        "data": data
+    }
 # --------------------------------------------------------------------------
 
 
