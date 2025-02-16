@@ -18,7 +18,7 @@ router = APIRouter()
 
 # Global variables
 API_SOURCE_DATA: Dict[str, StockModel] = {} # Dictionary to store stock data with stock_id as key
-
+USER_BALANCE = 7_50_750.45
 
 
 
@@ -260,3 +260,20 @@ def get_stock_quantity_available_for_sell(stock_id: str, db: Session = Depends(g
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 # --------------------------------------------------------------------------
+
+
+@router.get("/get-balance")
+def get_user_balance(): # db: Session = Depends(get_db)):
+    """
+    Ex:  curl -X GET "http://0.0.0.0:8500/api/get-balance"
+    """
+    try:
+        data = USER_BALANCE
+        return {
+            "message": "Sell Transaction successfull", 
+            "data": data
+        }
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
