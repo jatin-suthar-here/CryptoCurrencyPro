@@ -1,14 +1,16 @@
 import requests, json
 import aiofiles
 import asyncio  # For periodic tasks
+from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends, WebSocket
 from sqlalchemy.orm import Session
 from constants import constants
 from utils.database import get_db
 from utils.utils import get_current_time
 from ..endpoint_utils.endpoint_utils import (upsert_favourite_stock_in_db, remove_favourite_stock_from_db,
-    retrieve_favourite_stocks_from_db, check_is_stock_favourite_from_db)
-from models.models import StockModel, FavStockModel
+    retrieve_favourite_stocks_from_db, check_is_stock_favourite_from_db, upsert_buy_transaction_in_db, 
+    upsert_sell_transaction_in_db, get_stock_quantity_available_for_sell_in_db)
+from models.models import StockModel, FavStockModel, TransactionType
 from typing import Dict, List
 
 router = APIRouter()
@@ -138,7 +140,7 @@ def get_favourite_stocks(db: Session = Depends(get_db)):
         # converting the each dict to StockModel format...
         if not API_SOURCE_DATA:
             raise HTTPException(status_code=500, detail="Source data is not available.")
-        
+
         favourite_stocks_list.extend(
             FavStockModel(**API_SOURCE_DATA[item["stock_id"]].dict(), fav_id=int(item["id"])) for item in favourite_stocks
             # Converts all the API_SOURCE_DATA elements to dict + Add fav_id, and map all to FavStockModel.
@@ -198,8 +200,63 @@ def check_is_stock_favourite(stock_id: str, db: Session = Depends(get_db)):
 
 # --------------------------------------------------------------------------
 @router.post("/buy-stock")
-def buy_stocks(stock: StockModel, db: Session = Depends(get_db)):
-    pass
+def buy_stocks(stock_id: str, quantity: int, current_price: str, db: Session = Depends(get_db)):
+    """
+    Ex:  curl -X POST "http://0.0.0.0:8500/api/buy-stock?stock_id=bitcoin&quantity=2&current_price=45000"
+    """
+    try:
+        stock_data = {
+            "stock_id": stock_id,
+            "quantity": quantity,
+            "type": TransactionType.BUY.value,
+            "price_at_transaction": current_price,
+            "timestamp": datetime.now(timezone.utc)
+        }
+        upsert_buy_transaction_in_db(stock_data=stock_data, db=db)
+        return {
+            "message": "Buy Transaction successfull", 
+            "data": stock_data
+        }
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
+@router.post("/sell-stock")
+def sell_stocks(stock_id: str, quantity: int, current_price: str, db: Session = Depends(get_db)):
+    """
+    Ex:  curl -X POST "http://0.0.0.0:8500/api/sell-stock?stock_id=bitcoin&quantity=2&current_price=45000"
+    """
+    try:
+        stock_data = {
+            "stock_id": stock_id,
+            "quantity": quantity,
+            "type": TransactionType.SELL.value,
+            "price_at_transaction": current_price,
+            "timestamp": datetime.now(timezone.utc)
+        }
+        upsert_sell_transaction_in_db(stock_data=stock_data, db=db)
+        return {
+            "message": "Sell Transaction successfull", 
+            "data": stock_data
+        }
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.get("/get-stock-sell-qty")
+def get_stock_quantity_available_for_sell(stock_id: str, db: Session = Depends(get_db)):
+    """
+    Ex:  curl -X GET "http://0.0.0.0:8500/api/get-stock-sell-qty?stock_id=bitcoin"
+    """
+    try:
+        data = get_stock_quantity_available_for_sell_in_db(stock_id=stock_id, db=db)
+        return {
+            "message": "Sell Transaction successfull", 
+            "data": data
+        }
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 # --------------------------------------------------------------------------
