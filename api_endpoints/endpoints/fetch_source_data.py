@@ -213,6 +213,10 @@ def buy_stocks(stock_id: str, quantity: int, current_price: str, db: Session = D
             "timestamp": datetime.now(timezone.utc)
         }
         upsert_buy_transaction_in_db(stock_data=stock_data, db=db)
+
+        ## Updating user balance on Buying Stocks
+        USER_BALANCE = USER_BALANCE - (float(current_price) * quantity)
+
         return {
             "message": "Buy Transaction successfull", 
             "data": stock_data
@@ -236,6 +240,10 @@ def sell_stocks(stock_id: str, quantity: int, current_price: str, db: Session = 
             "timestamp": datetime.now(timezone.utc)
         }
         upsert_sell_transaction_in_db(stock_data=stock_data, db=db)
+
+        ## Updating user balance on Selling Stocks
+        USER_BALANCE = USER_BALANCE + (float(current_price) * quantity)
+        
         return {
             "message": "Sell Transaction successfull", 
             "data": stock_data
