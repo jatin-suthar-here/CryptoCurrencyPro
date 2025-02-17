@@ -215,6 +215,7 @@ def buy_stocks(stock_id: str, quantity: int, current_price: str, db: Session = D
         upsert_buy_transaction_in_db(stock_data=stock_data, db=db)
 
         ## Updating user balance on Buying Stocks
+        global USER_BALANCE
         USER_BALANCE = USER_BALANCE - (float(current_price) * quantity)
 
         return {
@@ -242,6 +243,7 @@ def sell_stocks(stock_id: str, quantity: int, current_price: str, db: Session = 
         upsert_sell_transaction_in_db(stock_data=stock_data, db=db)
 
         ## Updating user balance on Selling Stocks
+        global USER_BALANCE
         USER_BALANCE = USER_BALANCE + (float(current_price) * quantity)
         
         return {
