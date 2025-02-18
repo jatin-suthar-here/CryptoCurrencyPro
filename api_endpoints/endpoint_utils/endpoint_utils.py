@@ -150,7 +150,8 @@ def get_stock_quantity_available_for_sell_in_db(stock_id: str, db: Session):
         result = db.execute(text(sql_query), {"stock_id": stock_id})
         data = result.fetchone()
         print(">>> Data fetched successfully - (get_stock_quantity_available_for_sell_in_db).")
-        return data[0]
+        if data: return data[0]
+        else: return 0
     except Exception as e:
         db.rollback()
         print(f"Unexpected error occurred - (get_stock_quantity_available_for_sell_in_db) : {str(e)}")
