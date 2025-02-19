@@ -18,7 +18,7 @@ router = APIRouter()
 
 # Global variables
 API_SOURCE_DATA: Dict[str, StockModel] = {} # Dictionary to store stock data with stock_id as key
-USER_BALANCE = 7_50_750.45
+USER_BALANCE = 10_50_750.45
 
 
 
