@@ -1,2 +1,9 @@
 # Ignore environment files
 .env
+.DS_Store
+*.log
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
