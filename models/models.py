@@ -35,8 +35,8 @@ class FavStockModel(BaseModel):
 
 
 class TransactionType(PyEnum):
-    BUY = "buy"
-    SELL = "sell"
+    BUY = "BUY"
+    SELL = "SELL"
 
 class TransactionStatus(PyEnum):
     PROFIT = "profit"

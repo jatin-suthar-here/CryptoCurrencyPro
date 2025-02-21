@@ -1,7 +1,7 @@
 import uvicorn, argparse
 import asyncio
 from fastapi import FastAPI, WebSocket
-from api_endpoints.endpoints import home, fetch_source_data, filters
+from api_endpoints.endpoints import endpoints, home, filters
 from utils import setup_database
 
 
@@ -11,7 +11,7 @@ async def app_lifespan(app: FastAPI):
     
     # Startup logic
     # Populate API_SOURCE_DATA during startup of App (Server)
-    await fetch_source_data.fetch_source_data_from_api()  
+    await endpoints.fetch_source_data_from_api()  
 
     # # Start periodic task to fetch data every 15 minutes
     # app.state.periodic_task = asyncio.create_task(fetch_source_data.periodic_fetch_data())
@@ -29,7 +29,7 @@ app = FastAPI(lifespan=app_lifespan)
 
 # Include routers
 app.include_router(home.router)
-app.include_router(fetch_source_data.router, prefix="/api")
+app.include_router(endpoints.router, prefix="/api")
 app.include_router(filters.router, prefix="/api")
 
 
