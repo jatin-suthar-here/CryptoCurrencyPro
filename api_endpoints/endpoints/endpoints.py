@@ -1,12 +1,11 @@
 import requests, json
 import aiofiles
 import asyncio  # For periodic tasks
-from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends, WebSocket
 from sqlalchemy.orm import Session
 from constants import constants
 from utils.database import get_db
-from utils.utils import get_current_time
+from utils.utils import get_current_datetime
 from ..endpoint_utils.endpoint_utils import (upsert_favourite_stock_in_db, remove_favourite_stock_from_db,
     retrieve_favourite_stocks_from_db, check_is_stock_favourite_from_db, upsert_buy_transaction_in_db, 
     upsert_sell_transaction_in_db, get_stock_quantity_available_for_sell_in_db)
@@ -99,7 +98,7 @@ def get_source_data():
             raise HTTPException(status_code=500, detail="Source data is not available.")
 
         return {
-            "message": f"Successfully extracted data on {get_current_time()}", 
+            "message": f"Successfully extracted data on {get_current_datetime()}", 
             "data": API_SOURCE_DATA
         }
     
@@ -210,7 +209,7 @@ def buy_stocks(stock_id: str, quantity: int, current_price: str, db: Session = D
             "quantity": quantity,
             "type": TransactionType.BUY.value,
             "price_at_transaction": current_price,
-            "timestamp": datetime.now(timezone.utc)
+            "timestamp": get_current_datetime()
         }
         upsert_buy_transaction_in_db(stock_data=stock_data, db=db)
 
@@ -238,7 +237,7 @@ def sell_stocks(stock_id: str, quantity: int, current_price: str, db: Session = 
             "quantity": quantity,
             "type": TransactionType.SELL.value,
             "price_at_transaction": current_price,
-            "timestamp": datetime.now(timezone.utc)
+            "timestamp": get_current_datetime()
         }
         upsert_sell_transaction_in_db(stock_data=stock_data, db=db)
 
@@ -272,6 +271,9 @@ def get_stock_quantity_available_for_sell(stock_id: str, db: Session = Depends(g
 # --------------------------------------------------------------------------
 
 
+
+
+# --------------------------------------------------------------------------
 @router.get("/get-balance")
 def get_user_balance(): # db: Session = Depends(get_db)):
     """
@@ -286,4 +288,12 @@ def get_user_balance(): # db: Session = Depends(get_db)):
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+# --------------------------------------------------------------------------
+
+
+
+
+
+
+
 

@@ -1,7 +1,7 @@
 import uvicorn, argparse
 import asyncio
 from fastapi import FastAPI, WebSocket
-from api_endpoints.endpoints import endpoints, home, filters
+from api_endpoints.endpoints import endpoints, auth_endpoints, home, filters
 from utils import setup_database
 
 
@@ -30,6 +30,7 @@ app = FastAPI(lifespan=app_lifespan)
 # Include routers
 app.include_router(home.router)
 app.include_router(endpoints.router, prefix="/api")
+app.include_router(auth_endpoints.router, prefix="/auth")
 app.include_router(filters.router, prefix="/api")
 
 

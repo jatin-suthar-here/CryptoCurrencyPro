@@ -1,7 +1,7 @@
-from datetime import datetime, timezone
+import uuid
 from sqlalchemy import (create_engine, MetaData, Table, Column, ForeignKey, Integer, String,
-    DateTime, ARRAY, Numeric, Text, BigInteger, Float, text)
-from sqlalchemy.dialects.postgresql import ENUM
+    DateTime, UniqueConstraint, ARRAY, Numeric, Text, BigInteger, Float, text)
+from sqlalchemy.dialects.postgresql import ENUM, UUID
 from constants import constants
 
 """
@@ -9,12 +9,18 @@ TO RUN THIS SCRIP INDIVIDUALLY : (cd root_dir) --> python3 -m utils.setup_databa
 """
 
 
+## -------------------------------------------------------------
 # Create the database engine
 engine = create_engine(constants.EXTERNAL_DB_URL)
 
 # Define metadata object for holding the schema
 metadata = MetaData()
+## -------------------------------------------------------------
 
+
+
+
+## -------------------------------------------------------------
 transaction_enum = ENUM("BUY", "SELL", name="transactiontype", create_type=True, metadata=metadata)
 transaction_enum.create(engine, checkfirst=True)  # Ensures it's created only if it doesn’t exist
 """
@@ -27,75 +33,100 @@ To check enum present in the DB:
 Raw SQL cmd to create enum:
 - CREATE TYPE transactiontype AS ENUM ('BUY', 'SELL');
 """
+## -------------------------------------------------------------
 
 
-# # TODO: Will Create Later
-# # TABLE 1
-# users_table = Table(
-#     "users",
-#     metadata,
-#     # Unique user ID
-#     # ALTERNATE OPTION : # Column("user_id", String(36), primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False),
-#     Column("id", String(100), primary_key=True, nullable=False, unique=True),  
-#     Column("username", String(50), nullable=False, unique=True),  # Username
-#     Column("email", String(100), nullable=False, unique=True),  # Email
-#     Column("password", String(100), nullable=False),  # Hashed password
-# )
 
-# # NOTE: [NOT NEEDED] TABLE 2
-# stocks_table = Table(
-#     "stocks",
-#     metadata,
-#     Column("id", String(100), primary_key=True, nullable=False, unique=True),  # Unique ID
-#     Column("symbol", String(20), nullable=False),  # Stock symbol (e.g., BTC)
-#     Column("name", String(100), nullable=False),  # Stock name (e.g., Bitcoin)
-#     Column("image", String, nullable=False),  # URL for the image
-#     Column("current_price", String(100), nullable=True),  # Current price of the stock
-#     Column("market_cap", String(100), nullable=True),  # Market capitalization
-#     Column("market_cap_rank", String(100), nullable=True),  # Market cap rank
-#     Column("high_24h", String(100), nullable=True),  # Highest price in the last 24h
-#     Column("low_24h", String(100), nullable=True),  # Lowest price in the last 24h
-#     Column("price_change_24h", String(100), nullable=True),  # Absolute price change in the last 24h
-#     Column("price_change_percentage_24h", String(100), nullable=True),  # Percentage price change in the last 24h
-#     Column("sparkline", ARRAY(Float), nullable=True),  # Percentage price change in the last 24h
-# )
+
+## -------------------------------------------------------------
+# TABLE 1 
+# USERS TABLE (Main Table)
+users_table = Table(
+    "users",
+    metadata,
+    ## user_id of uuid type will automatically generated on inserting data.
+    Column("user_id", UUID(as_uuid=True), primary_key=True, server_default=text("uuid_generate_v4()"), nullable=False, unique=True),
+    Column("fullname", String(100), nullable=False),  # Fullname
+    Column("email", String(100), nullable=False, unique=True),  # Unique email
+    Column("password", String(100), nullable=False),  # Hashed password
+)
+
+# TABLE 2
+# AUTH TOKEN TABLE 
+auth_token_table = Table(
+    "auth_tokens",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),  
+    Column("user_id", UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False, unique=True),  # Ensure one token per user  
+    Column("refresh_token", String(900), nullable=False, unique=True),  # Ensure token is unique  
+    Column("created_at", DateTime, nullable=False, default=None),  
+    Column("expires_at", DateTime, nullable=False, default=None)  
+)
 
 # TABLE 3
-favourite_stocks_table = Table(
-    "favourite_stocks",
+# USER WALLETS TABLE
+user_wallets_table = Table(
+    "user_wallets",
     metadata,
-    # Unique ID for the favorite entry
-    Column("id", Integer, primary_key=True, autoincrement=True, nullable=False), 
-    # Foreign key to stocks
-    Column("stock_id", String(100), nullable=False, unique=True)
-    # TODO: # Foreign key to users
-    # Column("user_id", String(100), ForeignKey("users.id"), nullable=False),  
+    Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),  
+    Column("user_id", UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False, unique=True),  # One account per user
+    Column("bank_name", String(100), nullable=False),  # Bank Name  
+    Column("balance", Float, nullable=False, default=0.0),  # User balance  
+    Column("credit_card_number", String(20), nullable=False, unique=True),  # Credit Card number  
+    Column("expiry_date", String(7), nullable=True),  # Format: MM/YYYY
+    Column("cvv", String(4), nullable=True), 
+    Column("created_at", DateTime, nullable=False, default=None),
+    Column("updated_at", DateTime, nullable=False, default=None)  
 )
 
 # TABLE 4
+# FAVOURITE STOCKS TABLE (Child Table)
+favourite_stocks_table = Table(
+    "favourite_stocks",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),  
+    Column("user_id", UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False),  # Foregin Key to users
+    Column("stock_id", String(100), nullable=False),  # Stock identifier
+
+    # Ensure a user cannot favorite the same stock multiple times (user_id + stock_id - should be unique)
+    UniqueConstraint("user_id", "stock_id", name="fav_table_uq_user_stock")
+)
+
+# TABLE 5
+# TRANSACTION STOCKS TABLE (Child Table)
 transaction_table = Table(
     "transactions",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True, nullable=False), 
+    Column("user_id", UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False),  # Foregin Key to users
     Column("stock_id", String(100), nullable=False), # Removed unique=True - This means each stock can only have one transaction, which is incorrect because A single stock can have multiple transactions (buying, selling at different times).
     Column("quantity", Integer, nullable=True),
     Column("type", transaction_enum, nullable=False),  # Using Enum for buy/sell
     Column("price_at_transaction", String(100), nullable=True),
-    Column("timestamp", DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)) 
+    Column("timestamp", DateTime, nullable=False, default=None) 
 )
 
-# TABLE 4
+# TABLE 6
+# PORTFOLIO STOCKS TABLE (Child Table)
 portfolio_table = Table(
     "portfolio",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True, nullable=False), 
+    Column("user_id", UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False),  # Foregin Key to users
     Column("stock_id", String(100), nullable=False, unique=True),
     Column("quantity", Integer, nullable=False),
     Column("price_at_transaction", String(100), nullable=True),
-    Column("timestamp", DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)) 
+    Column("timestamp", DateTime, nullable=False, default=None),
+
+    # Ensure a user cannot add the same stock multiple times (user_id + stock_id - should be unique)
+    UniqueConstraint("user_id", "stock_id", name="portfolio_table_uq_user_stock")
 )
+## -------------------------------------------------------------
 
 
+
+
+## -------------------------------------------------------------
 # Function to create the table
 def create_tables():
     try:
@@ -123,5 +154,7 @@ def drop_database():
         print("All tables dropped successfully. Database is now empty.")
     except Exception as e:
         print(f"An error occurred while dropping the database: {e}")
+## -------------------------------------------------------------
+
 
 

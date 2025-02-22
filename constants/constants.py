@@ -1,3 +1,5 @@
+from datetime import datetime, timezone, timedelta
+
 # URLS for Source Data:
 
 # ORIGINAL ->  https://api.coingecko.com/api/v3/coins/markets?vs_currency=Inr&order=market_cap_desc&per_page=250&page=1&sparkline=true&price_change_percentage=24h
@@ -14,6 +16,14 @@ URL_PARAMS = {
     "price_change_percentage": "24h",
     "sparkline": "true"
 }
+
+
+TOKEN_ISS = "jatin-suthar.com"
+SECRET_KEY = "my-secret-key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(minutes=24*60)
+REFRESH_TOKEN_EXPIRE_DAYS = timedelta(days=7)
+
 
 
 # ### DataBase Configurations
