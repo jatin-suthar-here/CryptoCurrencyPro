@@ -1,4 +1,5 @@
-from datetime import datetime, timezone, timedelta
+import secrets
+from datetime import timedelta
 
 # URLS for Source Data:
 
@@ -19,7 +20,7 @@ URL_PARAMS = {
 
 
 TOKEN_ISS = "jatin-suthar.com"
-SECRET_KEY = "my-secret-key"
+SECRET_KEY = secrets.token_hex(32)  # Generates a 64-character highly secure secret key
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(minutes=24*60)
 REFRESH_TOKEN_EXPIRE_DAYS = timedelta(days=7)

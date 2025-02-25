@@ -214,6 +214,23 @@ def upsert_refresh_token_in_db(data_dict: dict, db: Session):
         raise e
 
 
+def get_refresh_token_from_the_db(user_id: str, db: Session):
+    try:        
+        sql_query = """
+            SELECT refresh_token
+            FROM auth_tokens
+            WHERE user_id = :user_id ;
+        """
+        result = db.execute(text(sql_query), {"user_id": user_id})
+        data = result.fetchone()
+        if data: 
+            return {
+                "refresh_token": data[0]
+            }
+        else: return False
+    except Exception as e:
+        print(f"Unexpected error occurred - (verify_user_exists_in_db) : {str(e)}")
+        raise e
 
 
 
