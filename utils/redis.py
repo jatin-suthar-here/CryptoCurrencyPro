@@ -48,4 +48,12 @@ def is_token_revoked(jti):
     return r.exists(jti)  # Returns True if token is blacklisted
 
 
+def add_user_in_redis(user_id):
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=DB_FOR_USERS, decode_responses=True)
+    r.set(user_id, "active")
+
+def is_user_exists_in_redis(user_id):
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=DB_FOR_USERS, decode_responses=True)
+    return r.exists(user_id)  # Returns True if token is blacklisted
+
 
