@@ -3,12 +3,18 @@ import asyncio
 from fastapi import FastAPI, WebSocket
 from api_endpoints.endpoints import endpoints, auth_endpoints, home, filters
 from utils import setup_database
+from utils.redis import start_redis, stop_redis, check_redis_connection
+
 
 
 async def app_lifespan(app: FastAPI):
     """ Lifespan event handler for FastAPI app startup and shutdown. """
     print("App is starting...")
     
+    # Start Redis before app starts
+    start_redis()
+    check_redis_connection()
+
     # Startup logic
     # Populate API_SOURCE_DATA during startup of App (Server)
     await endpoints.fetch_source_data_from_api()  
@@ -21,6 +27,9 @@ async def app_lifespan(app: FastAPI):
 
     # Shutdown logic (if needed)
     print("App is shutting down...")
+
+    # Stop Redis server on FastAPI server stops
+    # stop_redis()
 
 
 # Pass the lifespan function to FastAPI

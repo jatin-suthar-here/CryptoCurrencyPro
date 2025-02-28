@@ -36,13 +36,13 @@ def create_jwt_token(user_data: dict):
         "created_at": (user_data["created_at"]),
         "expires_at": (user_data["expires_at"])
     }
-    return jwt.encode(to_encode, constants.SECRET_KEY, algorithm=constants.ALGORITHM)
+    token = jwt.encode(to_encode, constants.SECRET_KEY, algorithm=constants.ALGORITHM)
+    return token
 
 
 def verify_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, constants.SECRET_KEY, algorithms=[constants.ALGORITHM])
-
         # Parse the expires_at string into a datetime object
         expires_at = datetime.strptime(payload["expires_at"], "%Y-%m-%d %I:%M:%S %p").replace(tzinfo=timezone.utc)
         if expires_at < datetime.now(timezone.utc):
@@ -50,26 +50,28 @@ def verify_token(token: str = Depends(oauth2_scheme)):
         
         # Check if token is blacklisted
         if is_token_revoked(payload["jti"]):
-            return HTTPException(status_code=401, detail="Invalid - Token is Blacklisted")
+            raise HTTPException(status_code=401, detail="Invalid - Token is Blacklisted")
 
         return payload
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-# Refresh token endpoint
 @router.post("/refresh-token")
-def refresh(access_token: str):
+def refresh_access_token(access_token: str, db: Session = Depends(get_db)):
+    """
+    curl -X POST "http://0.0.0.0:8500/auth/refresh-token?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZDI4ZmU2MjUtNmI1Ny00MGI5LTg1ZmUtYjExYzQ5ZWRkMzA5IiwiZnVsbG5hbWUiOiJKYXRpbiBTdXRoYXIiLCJlbWFpbCI6ImphdGluQGFwcGxlLmNvbSIsInBhc3N3b3JkIjoiSjExIiwiaXNzIjoiamF0aW4tc3V0aGFyLmNvbSIsImp0aSI6ImQyZGM5M2Y5LWExZGUtNGI1MC05YTNmLTNmOWEzMDdkZGYxMSIsImNyZWF0ZWRfYXQiOiIyMDI1LTAyLTI4IDEwOjI3OjI2IFBNIiwiZXhwaXJlc19hdCI6IjIwMjUtMDMtMDEgMTA6Mjc6MjYgUE0ifQ.AGOB8qVF9wl475Nlt6smVbYSokWmSZlv33zGRb5ykWg"
+    """
     try:
         payload = jwt.decode(token=access_token, key=constants.SECRET_KEY, algorithms=[constants.ALGORITHM])
         user_id = payload["user_id"]
-        data = get_refresh_token_from_the_db(user_id=user_id)
-        refresh_token = data["refresh_token"]
+        refresh_token = get_refresh_token_from_the_db(user_id=user_id, db=db)["refresh_token"]
 
-        refresh_token_payload = jwt.decode(refresh_token, constants.SECRET_KEY, algorithms=[constants.ALGORITHM])
+        refresh_token_payload = jwt.decode(token=refresh_token, key=constants.SECRET_KEY, algorithms=[constants.ALGORITHM])
         expires_at = datetime.strptime(refresh_token_payload["expires_at"], "%Y-%m-%d %I:%M:%S %p").replace(tzinfo=timezone.utc)
         if expires_at < datetime.now(timezone.utc):
             raise HTTPException(status_code=401, detail="Refresh Token Expired.")
+            ## NOTE: Redirecting user to Login again...
         
         user_data = {
             "user_id": str(refresh_token_payload["user_id"]),  # Convert UUID to string
@@ -79,12 +81,14 @@ def refresh(access_token: str):
             "iss": refresh_token_payload["iss"],
             "jti": refresh_token_payload["jti"],  # Unique token ID for Token Blacklisting through Redis
             "created_at": get_current_datetime(),
-            "expires_at": constants.ACCESS_TOKEN_EXPIRE_MINUTES
+            "expires_at": get_current_datetime(timedelta=constants.ACCESS_TOKEN_EXPIRE_MINUTES)
         }
         new_access_token = create_jwt_token(user_data=user_data)
         return {"access_token": new_access_token}
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error in refresh_access_token: {str(e)}")
     
 
 @router.get("/test")
@@ -102,34 +106,50 @@ def login_user(email: str, password: str, db: Session = Depends(get_db)):
     curl -X POST "http://0.0.0.0:8500/auth/login?email=jatin@apple.com&password=Hello" -L
     The -L flag ensures that curl follows the redirect and displays the response from the /signup endpoint.
     """
-    user_data = verify_user_exists_in_db(email=email, password=password, db=db)
-    if user_data:
-        user_data["iss"] = constants.TOKEN_ISS # Verify Token Issuer (iss)
-        user_data["created_at"] = get_current_datetime()
+    try:
+        user_data = verify_user_exists_in_db(email=email, password=password, db=db)
+        if user_data:
+            user_data["iss"] = constants.TOKEN_ISS # Verify Token Issuer (iss)
+            user_data["created_at"] = get_current_datetime()
 
-        ## creating new access token
-        user_data["expires_at"] = get_current_datetime(timedelta=constants.ACCESS_TOKEN_EXPIRE_MINUTES)
-        new_access_token = create_jwt_token(user_data=user_data)
+            ## creating new access token
+            user_data["expires_at"] = get_current_datetime(timedelta=constants.ACCESS_TOKEN_EXPIRE_MINUTES)
+            new_access_token = create_jwt_token(user_data=user_data)
 
-        ## creating new refresh token
-        user_data["expires_at"] = get_current_datetime(timedelta=constants.REFRESH_TOKEN_EXPIRE_DAYS)
-        refresh_token = create_jwt_token(user_data=user_data)
-        
-        refresh_token_dict = {
-            "refresh_token": refresh_token,
-            "user_id": user_data["user_id"],
-            "created_at": user_data["created_at"],
-            "expires_at": user_data["expires_at"]
-        }
-        upsert_refresh_token_in_db(data_dict=refresh_token_dict, db=db)
-        return {"access_token": new_access_token}
-    else:
-        return RedirectResponse(url=f"/auth/signup?email={email}&password={password}", status_code=301)
+            ## creating new refresh token
+            user_data["expires_at"] = get_current_datetime(timedelta=constants.REFRESH_TOKEN_EXPIRE_DAYS)
+            refresh_token = create_jwt_token(user_data=user_data)
+            
+            refresh_token_dict = {
+                "refresh_token": refresh_token,
+                "user_id": user_data["user_id"],
+                "created_at": user_data["created_at"],
+                "expires_at": user_data["expires_at"]
+            }
+            upsert_refresh_token_in_db(data_dict=refresh_token_dict, db=db)
+            return {"access_token": new_access_token}
+        else:
+            return RedirectResponse(url=f"/auth/signup?email={email}&password={password}", status_code=301)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error in login_user: {str(e)}")
+
+
+@router.post("/logout")
+def logout_user(payload: dict = Depends(verify_token)):
+    """
+    curl -X POST "http://localhost:8000/logout" -H "Authorization: Bearer your_jwt_token_here"
+    """
+    print("logout Payload: ", payload)
+    revoke_token(jti=payload["jti"], exp_time=payload["expires_at"])
+    return {"User logged out successfully."}
 
 
 @router.post("/signup")
-def signup_user(email: str, password: str, db: Session = Depends(get_db)):
-    return f"Lets SignUp User [email={email}, password={password}]"
+def signup_user(email: str, password: str, full_name: str, db: Session = Depends(get_db)):
+    try:
+        pass
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error in signup_user: {str(e)}")
 
 
 
