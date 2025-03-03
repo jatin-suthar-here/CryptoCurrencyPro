@@ -46,7 +46,7 @@ def create_jwt_token(user_data: dict):
 def verify_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, constants.SECRET_KEY, algorithms=[constants.ALGORITHM])
-        print("payload : ", payload)
+        print("\n>>>>> payload : ", payload, "\n")
         # Parse the expires_at string into a datetime object
         expires_at = datetime.strptime(payload["expires_at"], "%Y-%m-%d %I:%M:%S %p").replace(tzinfo=timezone.utc)
         if expires_at < datetime.now(timezone.utc):
@@ -64,7 +64,7 @@ def verify_token(token: str = Depends(oauth2_scheme)):
 @router.post("/refresh-token")
 def refresh_access_token(access_token: str, db: Session = Depends(get_db)):
     """
-    curl -X POST "http://0.0.0.0:8500/auth/refresh-token?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZDI4ZmU2MjUtNmI1Ny00MGI5LTg1ZmUtYjExYzQ5ZWRkMzA5IiwiZnVsbG5hbWUiOiJKYXRpbiBTdXRoYXIiLCJlbWFpbCI6ImphdGluQGFwcGxlLmNvbSIsInBhc3N3b3JkIjoiSjExIiwiaXNzIjoiamF0aW4tc3V0aGFyLmNvbSIsImp0aSI6ImQyZGM5M2Y5LWExZGUtNGI1MC05YTNmLTNmOWEzMDdkZGYxMSIsImNyZWF0ZWRfYXQiOiIyMDI1LTAyLTI4IDEwOjI3OjI2IFBNIiwiZXhwaXJlc19hdCI6IjIwMjUtMDMtMDEgMTA6Mjc6MjYgUE0ifQ.AGOB8qVF9wl475Nlt6smVbYSokWmSZlv33zGRb5ykWg"
+    CMD:  curl -X POST "http://0.0.0.0:8500/auth/refresh-token?access_token=your-token-string"
     """
     try:
         payload = jwt.decode(token=access_token, key=constants.SECRET_KEY, algorithms=[constants.ALGORITHM])
@@ -98,9 +98,7 @@ def refresh_access_token(access_token: str, db: Session = Depends(get_db)):
 @router.get("/test")
 def protected_route(payload: dict = Depends(verify_token)):
     """
-    curl -X GET "http://0.0.0.0:8500/auth/test" -H "Authorization: Bearer your_jwt_token_here"
-    curl -X GET "http://0.0.0.0:8500/auth/test" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoieydmdWxsbmFtZSc6ICdKYXRpbiBTdXRoYXInLCAnZW1haWwnOiAnanRuQGFwcGxlLmNvbScsICdwYXNzd29yZCc6ICdKMTEnLCAndXNlcl9pZCc6IHsuLi59LCAnaXNzJzogJ2phdGluLXN1dGhhci5jb20nLCAnY3JlYXRlZF9hdCc6ICcyMDI1LTAzLTAzIDA5OjExOjA0IFBNJywgJ2V4cGlyZXNfYXQnOiAnMjAyNS0wMy0wNCAwOToxMTowNCBQTSd9IiwiZnVsbG5hbWUiOiJKYXRpbiBTdXRoYXIiLCJlbWFpbCI6Imp0bkBhcHBsZS5jb20iLCJwYXNzd29yZCI6IkoxMSIsImlzcyI6ImphdGluLXN1dGhhci5jb20iLCJqdGkiOiI1MDkyOWMwOS04NjcwLTRkNmEtYWYwZi02MWJkNzE2NjA5NmMiLCJjcmVhdGVkX2F0IjoiMjAyNS0wMy0wMyAwOToxMTowNCBQTSIsImV4cGlyZXNfYXQiOiIyMDI1LTAzLTA0IDA5OjExOjA0IFBNIn0.9tcHxTEsPxLNnf96za4CF6KAmGpMihRxvqXVTgiYjx"
-    
+    CMD:  curl -X GET "http://0.0.0.0:8500/auth/test" -H "Authorization: Bearer ....."
     """
     return {"message": "Access granted", "user": payload}
 
@@ -108,7 +106,7 @@ def protected_route(payload: dict = Depends(verify_token)):
 @router.post("/login")
 def login_user(email: str, password: str, db: Session = Depends(get_db)):
     """
-    curl -X POST "http://0.0.0.0:8500/auth/login?email=jatin@apple.com&password=Hello" -L
+    CMD:  curl -X POST "http://0.0.0.0:8500/auth/login?email=jatin@apple.com&password=Hello" -L
     The -L flag ensures that curl follows the redirect and displays the response from the /signup endpoint.
     """
     try:
@@ -182,7 +180,7 @@ def signup_user(email: str, password: str, fullname: str, db: Session = Depends(
 @router.post("/logout")
 def logout_user(payload: dict = Depends(verify_token)):
     """
-    curl -X POST "http://0.0.0.0:8500/auth/logout" -H "Authorization: Bearer ....."
+    CMD:  curl -X POST "http://0.0.0.0:8500/auth/logout" -H "Authorization: Bearer ....."
     """
     try:
         print("logout Payload: ", payload)
@@ -198,7 +196,7 @@ def delete_user(payload: dict = Depends(verify_token), db: Session = Depends(get
     NOTE: all the table contains ForeignKey("users.user_id", ondelete="CASCADE"), 
     this will automatically delete all the associated data of the user on deletion of user.
 
-    curl -X POST "http://0.0.0.0:8500/auth/delete-user" -H "Authorization: Bearer ....."
+    CMD:  curl -X POST "http://0.0.0.0:8500/auth/delete-user" -H "Authorization: Bearer ....."
     """
     try:
         user_id = payload["user_id"]
@@ -207,5 +205,4 @@ def delete_user(payload: dict = Depends(verify_token), db: Session = Depends(get
         return {"User Deleted Successfully."}
     except Exception as e:
         raise e
-    
     
