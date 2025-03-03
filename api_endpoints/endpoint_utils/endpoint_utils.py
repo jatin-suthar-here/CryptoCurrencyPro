@@ -20,7 +20,7 @@ def upsert_favourite_stock_in_db(stock_id: str, user_id: str, db: Session):
         # Upsert into favourite_stocks
         db.execute(text(sql_query), {"stock_id": stock_id, "user_id": user_id})
         db.commit()
-        print(">>> Data inserted successfully - (upsert_favourite_stocks_in_db).")
+        print(">>> upsert_favourite_stocks_in_db : success")
     except Exception as e:
         db.rollback()
         print(f"Unexpected error occurred - (upsert_favourite_stocks_in_db) : {str(e)}")
@@ -36,7 +36,7 @@ def remove_favourite_stock_from_db(stock_id: str, user_id: str, db: Session):
         # Remove stock from favourite_stocks
         db.execute(text(sql_query), {"stock_id": stock_id, "user_id": user_id})
         db.commit()
-        print(">>> Data removed successfully - (remove_favourite_stock_from_db).")
+        print(">>> remove_favourite_stock_from_db : success")
     except Exception as e:
         db.rollback()
         print(f"Unexpected error occurred - (remove_favourite_stock_from_db) : {str(e)}")
@@ -54,7 +54,7 @@ def retrieve_favourite_stocks_from_db(user_id: str, db: Session):
         result = db.execute(text(sql_query), {"user_id": user_id})
         # Fetch all rows as dictionaries by extracting the data with column names as keys.
         data = [dict(row._mapping) for row in result.fetchall()]
-        print(">>> Data retrieved successfully - (retrieve_favourite_stocks_from_db).")
+        print(">>> retrieve_favourite_stocks_from_db : success")
         return data
     except Exception as e:
         db.rollback()
@@ -69,7 +69,7 @@ def check_is_stock_favourite_from_db(stock_id: str, user_id: str, db: Session):
         """
         result = db.execute(text(sql_query), {"stock_id": stock_id, "user_id": user_id})
         exists = result.fetchone() is not None
-        print(">>> Data Checked successfully - (check_is_stock_favourite_from_db).")
+        print(">>> check_is_stock_favourite_from_db : success")
         return exists
     except Exception as e:
         db.rollback()
@@ -105,7 +105,7 @@ def upsert_buy_transaction_in_db(stock_data: dict, user_id: str, db: Session):
         """
         db.execute(text(sql_query), stock_data)
         db.commit()
-        print(">>> Data inserted successfully - (upsert_buy_transaction_in_db).")
+        print(">>> upsert_buy_transaction_in_db : success")
     except Exception as e:
         db.rollback()
         print(f"Unexpected error occurred - (upsert_buy_transaction_in_db) : {str(e)}")
@@ -141,7 +141,7 @@ def upsert_sell_transaction_in_db(stock_data: dict, user_id: str, db: Session):
         """
         db.execute(text(sql_query), stock_data)
         db.commit()
-        print(">>> Data inserted successfully - (upsert_sell_transaction_in_db).")
+        print(">>> upsert_sell_transaction_in_db : success")
     except Exception as e:
         db.rollback()
         print(f"Unexpected error occurred - (upsert_sell_transaction_in_db) : {str(e)}")
@@ -157,7 +157,7 @@ def get_stock_quantity_available_for_sell_in_db(stock_id: str, user_id: str, db:
         """
         result = db.execute(text(sql_query), {"stock_id": stock_id, "user_id": user_id})
         data = result.fetchone()
-        print(">>> Data fetched successfully - (get_stock_quantity_available_for_sell_in_db).")
+        print(">>> get_stock_quantity_available_for_sell_in_db : success")
         if data: return data[0]
         else: return 0
     except Exception as e:
@@ -166,6 +166,7 @@ def get_stock_quantity_available_for_sell_in_db(stock_id: str, user_id: str, db:
         raise e
 
 # --------------------------------------------------------------------------
+
 
 
 
@@ -231,7 +232,6 @@ def get_refresh_token_from_the_db(user_id: str, db: Session):
         raise e
 
 
-
 def insert_user_in_the_db(user_data: dict, db: Session) -> str:
     try:        
         sql_query = """
@@ -249,6 +249,7 @@ def insert_user_in_the_db(user_data: dict, db: Session) -> str:
         print(f"Unexpected error occurred - (insert_user_in_the_db) : {str(e)}")
         raise e
 
+
 def delete_user_from_the_db(user_id: str, db: Session):
     try:        
         sql_query = """
@@ -263,7 +264,7 @@ def delete_user_from_the_db(user_id: str, db: Session):
         db.rollback()
         print(f"Unexpected error occurred - (delete_user_from_the_db) : {str(e)}")
         raise e
-
+# --------------------------------------------------------------------------
 
 
 
