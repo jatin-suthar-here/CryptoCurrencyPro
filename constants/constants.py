@@ -20,10 +20,19 @@ URL_PARAMS = {
 
 
 TOKEN_ISS = "jatin-suthar.com"
-SECRET_KEY = secrets.token_hex(32)  # Generates a 64-character highly secure secret key
+SECRET_KEY = "3a01a403-8fed-4190-8da3-e07e3e0924cf"
+# NOTE: whenever server restarts the new Secret Key will generated...
+# SECRET_KEY = secrets.token_hex(32)  # Generates a 64-character highly secure secret key
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(minutes=24*60)
 REFRESH_TOKEN_EXPIRE_DAYS = timedelta(days=7)
+
+
+REDIS_UPSTASH_HOST = "included-hagfish-29759.upstash.io"
+REDIS_UPSTASH_PASSWORD = "AXQ_AAIjcDE0NTlhMTkwZjYxY2I0YzM1OGUyY2E5OTFlZjNmMjNiNXAxMA"
+REDIS_PORT = 6379
+REDIS_JTI_DB = "db0-jti:"
+REDIS_USERS_SESSION_DB = "db1-users:"
 
 
 

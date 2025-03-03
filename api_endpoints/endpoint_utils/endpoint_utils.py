@@ -171,8 +171,6 @@ def get_stock_quantity_available_for_sell_in_db(stock_id: str, user_id: str, db:
 
 # AUTHENTICATION FUNCTIONS
 # --------------------------------------------------------------------------
-#  3aacf75e-7ff1-4942-acb5-02f41da21d37
-
 def verify_user_exists_in_db(email: str, password: str, db: Session):
     try:        
         sql_query = """
@@ -231,6 +229,41 @@ def get_refresh_token_from_the_db(user_id: str, db: Session):
     except Exception as e:
         print(f"Unexpected error occurred - (verify_user_exists_in_db) : {str(e)}")
         raise e
+
+
+
+def insert_user_in_the_db(user_data: dict, db: Session) -> str:
+    try:        
+        sql_query = """
+            INSERT INTO users (fullname, email, password) 
+            VALUES (:fullname, :email, :password) 
+            RETURNING user_id ;
+        """
+        result = db.execute(text(sql_query), user_data)
+        user_id = result.fetchone()[0]  # Fetch the first row and get the first column
+        db.commit()
+        print(">>> insert_user_in_the_db : success")
+        return user_id
+    except Exception as e:
+        db.rollback()
+        print(f"Unexpected error occurred - (insert_user_in_the_db) : {str(e)}")
+        raise e
+
+def delete_user_from_the_db(user_id: str, db: Session):
+    try:        
+        sql_query = """
+            DELETE FROM users 
+            WHERE user_id = :user_id ;
+        """
+        db.execute(text(sql_query), {"user_id": user_id})
+        db.commit()
+        print(">>> delete_user_from_the_db : success")
+        return user_id
+    except Exception as e:
+        db.rollback()
+        print(f"Unexpected error occurred - (delete_user_from_the_db) : {str(e)}")
+        raise e
+
 
 
 

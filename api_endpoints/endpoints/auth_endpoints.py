@@ -8,13 +8,15 @@ from sqlalchemy.orm import Session
 
 ## local file imports
 from constants import constants
-from ..endpoint_utils.endpoint_utils import (verify_user_exists_in_db, upsert_refresh_token_in_db, get_refresh_token_from_the_db)
+from ..endpoint_utils.endpoint_utils import (verify_user_exists_in_db, upsert_refresh_token_in_db,
+    get_refresh_token_from_the_db, insert_user_in_the_db, delete_user_from_the_db)
 from utils.database import get_db
 from utils.utils import get_current_datetime
-from utils.redis import is_token_revoked, revoke_token
+from utils.redis import (is_token_revoked, revoke_token, add_user_session_in_redis, get_user_session_from_redis)
 
 
 router = APIRouter()
+# http://0.0.0.0:8500/auth/login
 
 
 ## The oauth2_scheme automatically looks for Authorization: Bearer <token> in the request header.
@@ -25,6 +27,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 def create_jwt_token(user_data: dict):
     """
     :param user_data (dict): user_id, fullname, email, password, iss, expires_at, created_at
+    NOTE: JTI will be created in this function.
     """
     to_encode = {
         "user_id": str(user_data["user_id"]),  # Convert UUID to string
@@ -43,6 +46,7 @@ def create_jwt_token(user_data: dict):
 def verify_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, constants.SECRET_KEY, algorithms=[constants.ALGORITHM])
+        print("payload : ", payload)
         # Parse the expires_at string into a datetime object
         expires_at = datetime.strptime(payload["expires_at"], "%Y-%m-%d %I:%M:%S %p").replace(tzinfo=timezone.utc)
         if expires_at < datetime.now(timezone.utc):
@@ -94,8 +98,9 @@ def refresh_access_token(access_token: str, db: Session = Depends(get_db)):
 @router.get("/test")
 def protected_route(payload: dict = Depends(verify_token)):
     """
-    curl -X GET "http://localhost:8000/test" -H "Authorization: Bearer your_jwt_token_here"
-    curl -X GET "http://0.0.0.0:8500/auth/test" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWIwMTA0MTItYmE5OC00ZDU5LWJhZjYtMjZkYzUzYWU1OTYwIiwiZnVsbG5hbWUiOiJKYXRpbiBTdXRoYXIiLCJlbWFpbCI6ImphdGluQGFwcGxlLmNvbSIsInBhc3N3b3JkIjoiSGVsbG9KIiwiaXNzIjoiamF0aW4tc3V0aGFyLmNvbSIsImV4cGlyZXNfYXQiOiIyMDI1LTAyLTIzIDExOjQzOjI3IFBNIiwiY3JlYXRlZF9hdCI6IjIwMjUtMDItMjIgMTE6NDM6MjcgUE0ifQ.3LHo4TsET1qks7LugDMqOqLzUrLMbqs0qy-jI1TD1-Q"
+    curl -X GET "http://0.0.0.0:8500/auth/test" -H "Authorization: Bearer your_jwt_token_here"
+    curl -X GET "http://0.0.0.0:8500/auth/test" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoieydmdWxsbmFtZSc6ICdKYXRpbiBTdXRoYXInLCAnZW1haWwnOiAnanRuQGFwcGxlLmNvbScsICdwYXNzd29yZCc6ICdKMTEnLCAndXNlcl9pZCc6IHsuLi59LCAnaXNzJzogJ2phdGluLXN1dGhhci5jb20nLCAnY3JlYXRlZF9hdCc6ICcyMDI1LTAzLTAzIDA5OjExOjA0IFBNJywgJ2V4cGlyZXNfYXQnOiAnMjAyNS0wMy0wNCAwOToxMTowNCBQTSd9IiwiZnVsbG5hbWUiOiJKYXRpbiBTdXRoYXIiLCJlbWFpbCI6Imp0bkBhcHBsZS5jb20iLCJwYXNzd29yZCI6IkoxMSIsImlzcyI6ImphdGluLXN1dGhhci5jb20iLCJqdGkiOiI1MDkyOWMwOS04NjcwLTRkNmEtYWYwZi02MWJkNzE2NjA5NmMiLCJjcmVhdGVkX2F0IjoiMjAyNS0wMy0wMyAwOToxMTowNCBQTSIsImV4cGlyZXNfYXQiOiIyMDI1LTAzLTA0IDA5OjExOjA0IFBNIn0.9tcHxTEsPxLNnf96za4CF6KAmGpMihRxvqXVTgiYjx"
+    
     """
     return {"message": "Access granted", "user": payload}
 
@@ -134,22 +139,73 @@ def login_user(email: str, password: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Unexpected error in login_user: {str(e)}")
 
 
-@router.post("/logout")
-def logout_user(payload: dict = Depends(verify_token)):
-    """
-    curl -X POST "http://localhost:8000/logout" -H "Authorization: Bearer your_jwt_token_here"
-    """
-    print("logout Payload: ", payload)
-    revoke_token(jti=payload["jti"], exp_time=payload["expires_at"])
-    return {"User logged out successfully."}
-
-
 @router.post("/signup")
-def signup_user(email: str, password: str, full_name: str, db: Session = Depends(get_db)):
+def signup_user(email: str, password: str, fullname: str, db: Session = Depends(get_db)):
     try:
-        pass
+        user_session = get_user_session_from_redis(email=email)
+        if user_session:
+            return {"User Already Exists."}
+        else:
+            user_data = {
+                "fullname": fullname,
+                "email": email,
+                "password": password
+            }
+            user_id = insert_user_in_the_db(user_data=user_data, db=db)
+
+            user_data["user_id"] = user_id
+            user_data["iss"] = constants.TOKEN_ISS
+            user_data["created_at"] = get_current_datetime()
+
+            ## creating new access token
+            user_data["expires_at"] = get_current_datetime(timedelta=constants.ACCESS_TOKEN_EXPIRE_MINUTES)
+            new_access_token = create_jwt_token(user_data=user_data)
+
+            ## creating new refresh token
+            user_data["expires_at"] = get_current_datetime(timedelta=constants.REFRESH_TOKEN_EXPIRE_DAYS)
+            refresh_token = create_jwt_token(user_data=user_data)
+            
+            refresh_token_dict = {
+                "refresh_token": refresh_token,
+                "user_id": user_id,
+                "created_at": user_data["created_at"],
+                "expires_at": user_data["expires_at"]
+            }
+            upsert_refresh_token_in_db(data_dict=refresh_token_dict, db=db)
+            add_user_session_in_redis(email=email, status="active")
+            return {"access_token": new_access_token}
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error in signup_user: {str(e)}")
 
 
+@router.post("/logout")
+def logout_user(payload: dict = Depends(verify_token)):
+    """
+    curl -X POST "http://0.0.0.0:8500/auth/logout" -H "Authorization: Bearer ....."
+    """
+    try:
+        print("logout Payload: ", payload)
+        revoke_token(jti=payload["jti"], exp_time=payload["expires_at"])
+        return {"User logged out successfully."}
+    except Exception as e:
+        raise e
 
+
+@router.post("/delete-user")
+def delete_user(payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
+    """
+    NOTE: all the table contains ForeignKey("users.user_id", ondelete="CASCADE"), 
+    this will automatically delete all the associated data of the user on deletion of user.
+
+    curl -X POST "http://0.0.0.0:8500/auth/delete-user" -H "Authorization: Bearer ....."
+    """
+    try:
+        user_id = payload["user_id"]
+        delete_user_from_the_db(user_id=user_id, db=db)
+        revoke_token(jti=payload["jti"], exp_time=payload["expires_at"])
+        return {"User Deleted Successfully."}
+    except Exception as e:
+        raise e
+    
+    
