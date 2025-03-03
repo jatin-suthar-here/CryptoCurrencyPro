@@ -24,24 +24,28 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
+
 def create_jwt_token(user_data: dict):
     """
     :param user_data (dict): user_id, fullname, email, password, iss, expires_at, created_at
     NOTE: JTI will be created in this function.
     """
-    to_encode = {
-        "user_id": str(user_data["user_id"]),  # Convert UUID to string
-        "fullname": user_data["fullname"],
-        "email": user_data["email"],
-        "password": user_data["password"],
-        "iss": user_data["iss"],
-        "jti": str(uuid.uuid4()),  # Unique token ID for Token Blacklisting through Redis
-        "created_at": (user_data["created_at"]),
-        "expires_at": (user_data["expires_at"])
-    }
-    token = jwt.encode(to_encode, constants.SECRET_KEY, algorithm=constants.ALGORITHM)
-    return token
-
+    try:
+        to_encode = {
+            "user_id": str(user_data["user_id"]),  # Convert UUID to string
+            "fullname": user_data["fullname"],
+            "email": user_data["email"],
+            "password": user_data["password"],
+            "iss": user_data["iss"],
+            "jti": str(uuid.uuid4()),  # Unique token ID for Token Blacklisting through Redis
+            "created_at": (user_data["created_at"]),
+            "expires_at": (user_data["expires_at"])
+        }
+        token = jwt.encode(to_encode, constants.SECRET_KEY, algorithm=constants.ALGORITHM)
+        return token
+    except Exception as e:
+        print("An error occurred [create_jwt_token]: ", e)
+        raise HTTPException(status_code=500, detail=f"Unexpected error in create_jwt_token: {str(e)}")
 
 def verify_token(token: str = Depends(oauth2_scheme)):
     try:
@@ -59,6 +63,10 @@ def verify_token(token: str = Depends(oauth2_scheme)):
         return payload
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        print("An error occurred [verify_token]: ")
+        raise HTTPException(status_code=500, detail=f"Unexpected error in verify_token: {str(e)}")
+
 
 
 @router.post("/refresh-token")
@@ -92,15 +100,8 @@ def refresh_access_token(access_token: str, db: Session = Depends(get_db)):
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
     except Exception as e:
+        print("An error occurred [refresh_access_token]: ")
         raise HTTPException(status_code=500, detail=f"Unexpected error in refresh_access_token: {str(e)}")
-    
-
-@router.get("/test")
-def protected_route(payload: dict = Depends(verify_token)):
-    """
-    CMD:  curl -X GET "http://0.0.0.0:8500/auth/test" -H "Authorization: Bearer ....."
-    """
-    return {"message": "Access granted", "user": payload}
 
 
 @router.post("/login")
@@ -134,6 +135,7 @@ def login_user(email: str, password: str, db: Session = Depends(get_db)):
         else:
             return RedirectResponse(url=f"/auth/signup?email={email}&password={password}", status_code=301)
     except Exception as e:
+        print("An error occurred [login_user]: ")
         raise HTTPException(status_code=500, detail=f"Unexpected error in login_user: {str(e)}")
 
 
@@ -174,6 +176,7 @@ def signup_user(email: str, password: str, fullname: str, db: Session = Depends(
             return {"access_token": new_access_token}
         
     except Exception as e:
+        print("An error occurred [signup_user]: ")
         raise HTTPException(status_code=500, detail=f"Unexpected error in signup_user: {str(e)}")
 
 
@@ -187,7 +190,8 @@ def logout_user(payload: dict = Depends(verify_token)):
         revoke_token(jti=payload["jti"], exp_time=payload["expires_at"])
         return {"User logged out successfully."}
     except Exception as e:
-        raise e
+        print("An error occurred [logout_user]: ")
+        raise HTTPException(status_code=500, detail=f"Unexpected error in logout_user: {str(e)}")
 
 
 @router.post("/delete-user")
@@ -204,5 +208,6 @@ def delete_user(payload: dict = Depends(verify_token), db: Session = Depends(get
         revoke_token(jti=payload["jti"], exp_time=payload["expires_at"])
         return {"User Deleted Successfully."}
     except Exception as e:
-        raise e
+        print("An error occurred [delete_user]: ")
+        raise HTTPException(status_code=500, detail=f"Unexpected error in delete_user: {str(e)}")
     
