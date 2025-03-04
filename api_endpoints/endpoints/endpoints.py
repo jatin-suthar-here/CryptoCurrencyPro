@@ -3,7 +3,6 @@ import aiofiles
 import asyncio  # For periodic tasks
 from fastapi import APIRouter, HTTPException, Depends, WebSocket
 from sqlalchemy.orm import Session
-from constants import constants
 from utils.database import get_db
 from utils.utils import get_current_datetime
 from ..endpoint_utils.endpoint_utils import (upsert_favourite_stock_in_db, remove_favourite_stock_from_db,
@@ -289,11 +288,4 @@ def get_user_balance(): # db: Session = Depends(get_db)):
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 # --------------------------------------------------------------------------
-
-
-
-
-
-
-
 

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from jose import JWTError, jwt
 from fastapi import APIRouter, HTTPException, Depends, WebSocket
 from fastapi.security import OAuth2PasswordBearer
@@ -24,7 +24,6 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-
 def create_jwt_token(user_data: dict):
     """
     :param user_data (dict): user_id, fullname, email, password, iss, expires_at, created_at
@@ -46,6 +45,7 @@ def create_jwt_token(user_data: dict):
     except Exception as e:
         print("An error occurred [create_jwt_token]: ", e)
         raise HTTPException(status_code=500, detail=f"Unexpected error in create_jwt_token: {str(e)}")
+
 
 def verify_token(token: str = Depends(oauth2_scheme)):
     try:
