@@ -133,7 +133,10 @@ def login_user(email: str, password: str, db: Session = Depends(get_db)):
             upsert_refresh_token_in_db(data_dict=refresh_token_dict, db=db)
             return {"access_token": new_access_token}
         else:
-            return RedirectResponse(url=f"/auth/signup?email={email}&password={password}", status_code=301)
+            raise HTTPException(
+                status_code=409,
+                detail="User with this email does not exists. Please Signup."
+            )
     except Exception as e:
         print("An error occurred [login_user]: ")
         raise HTTPException(status_code=500, detail=f"Unexpected error in login_user: {str(e)}")
@@ -147,7 +150,10 @@ def signup_user(email: str, password: str, fullname: str, db: Session = Depends(
     try:
         user_session = get_user_session_from_redis(email=email)
         if user_session:
-            return {"User Already Exists."}
+            raise HTTPException(
+                status_code=409,
+                detail="User with this email already exists. Please log in or reset your password."
+            )
         else:
             user_data = {
                 "fullname": fullname,
