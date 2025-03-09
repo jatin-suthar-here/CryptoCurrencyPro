@@ -148,6 +148,7 @@ def signup_user(email: str, password: str, fullname: str, db: Session = Depends(
     CMD:  curl -X POST "http://0.0.0.0:8500/auth/signup?email=jatin@apple.com&password=Hello&fullname=JatinSuthar"
     """
     try:
+        email = email.lower()
         user_session = get_user_session_from_redis(email=email)
         if user_session:
             raise HTTPException(
