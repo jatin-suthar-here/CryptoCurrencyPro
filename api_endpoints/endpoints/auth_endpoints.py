@@ -151,10 +151,10 @@ def signup_user(email: str, password: str, fullname: str, db: Session = Depends(
         email = email.lower()
         user_session = get_user_session_from_redis(email=email)
         if user_session:
-            raise HTTPException(
-                status_code=409,
-                detail="User with this email already exists. Please log in or reset your password."
-            )
+            {
+                "status_code": 409,
+                "detail": "User with this email already exists. Please log in or reset your password."
+            }
         else:
             user_data = {
                 "fullname": fullname,
