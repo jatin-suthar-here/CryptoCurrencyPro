@@ -131,7 +131,10 @@ def login_user(email: str, password: str, db: Session = Depends(get_db)):
                 "expires_at": user_data["expires_at"]
             }
             upsert_refresh_token_in_db(data_dict=refresh_token_dict, db=db)
-            return {"access_token": new_access_token}
+            return {
+                    "access_token": new_access_token,
+                    "expires_at": user_data["expires_at"]
+                    }
         else:
             return HTTPException(
                 status_code=409,
@@ -183,11 +186,6 @@ def signup_user(email: str, password: str, fullname: str, db: Session = Depends(
             }
             upsert_refresh_token_in_db(data_dict=refresh_token_dict, db=db)
             add_user_session_in_redis(email=email, status="active")
-
-            print({
-                "access_token": new_access_token,
-                "expires_at": user_data["expires_at"]
-            })
 
             return {
                 "access_token": new_access_token,
