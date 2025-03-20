@@ -134,7 +134,7 @@ def login_user(email: str, password: str, db: Session = Depends(get_db)):
             upsert_refresh_token_in_db(data_dict=refresh_token_dict, db=db)
             return {
                     "access_token": new_access_token,
-                    "expires_at": user_data["expires_at"]
+                    "expires_at": access_token_expiry
                     }
         else:
             return HTTPException(
