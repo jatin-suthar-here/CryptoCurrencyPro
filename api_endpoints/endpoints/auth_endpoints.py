@@ -117,7 +117,8 @@ def login_user(email: str, password: str, db: Session = Depends(get_db)):
             user_data["created_at"] = get_current_datetime()
 
             ## creating new access token
-            user_data["expires_at"] = get_current_datetime(timedelta=constants.ACCESS_TOKEN_EXPIRE_MINUTES)
+            access_token_expiry = get_current_datetime(timedelta=constants.ACCESS_TOKEN_EXPIRE_MINUTES)
+            user_data["expires_at"] = access_token_expiry
             new_access_token = create_jwt_token(user_data=user_data)
 
             ## creating new refresh token
@@ -171,7 +172,8 @@ def signup_user(email: str, password: str, fullname: str, db: Session = Depends(
             user_data["created_at"] = get_current_datetime()
 
             ## creating new access token
-            user_data["expires_at"] = get_current_datetime(timedelta=constants.ACCESS_TOKEN_EXPIRE_MINUTES)
+            access_token_expiry = get_current_datetime(timedelta=constants.ACCESS_TOKEN_EXPIRE_MINUTES)
+            user_data["expires_at"] = access_token_expiry
             new_access_token = create_jwt_token(user_data=user_data)
 
             ## creating new refresh token
@@ -189,7 +191,7 @@ def signup_user(email: str, password: str, fullname: str, db: Session = Depends(
 
             return {
                 "access_token": new_access_token,
-                "expires_at": user_data["expires_at"]
+                "expires_at": access_token_expiry
                 }
         
     except Exception as e:
