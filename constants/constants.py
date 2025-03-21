@@ -24,7 +24,7 @@ SECRET_KEY = "3a01a403-8fed-4190-8da3-e07e3e0924cf"
 # NOTE: whenever server restarts the new Secret Key will generated...
 # SECRET_KEY = secrets.token_hex(32)  # Generates a 64-character highly secure secret key
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(minutes=24*60)
+ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(minutes=5)
 REFRESH_TOKEN_EXPIRE_DAYS = timedelta(days=7)
 
 
