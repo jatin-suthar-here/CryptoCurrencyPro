@@ -96,7 +96,11 @@ def refresh_access_token(access_token: str, db: Session = Depends(get_db)):
             "expires_at": get_current_datetime(timedelta=constants.ACCESS_TOKEN_EXPIRE_MINUTES)
         }
         new_access_token = create_jwt_token(user_data=user_data)
-        return {"access_token": new_access_token}
+
+        return {
+            "access_token": new_access_token
+        }
+    
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
     except Exception as e:
@@ -132,10 +136,11 @@ def login_user(email: str, password: str, db: Session = Depends(get_db)):
                 "expires_at": user_data["expires_at"]
             }
             upsert_refresh_token_in_db(data_dict=refresh_token_dict, db=db)
+
             return {
-                    "access_token": new_access_token,
-                    "expires_at": access_token_expiry
-                    }
+                "access_token": new_access_token,
+                "expires_at": access_token_expiry
+            }
         else:
             return HTTPException(
                 status_code=409,
@@ -192,7 +197,7 @@ def signup_user(email: str, password: str, fullname: str, db: Session = Depends(
             return {
                 "access_token": new_access_token,
                 "expires_at": access_token_expiry
-                }
+            }
         
     except Exception as e:
         print("An error occurred [signup_user]: ")
@@ -207,7 +212,9 @@ def logout_user(payload: dict = Depends(verify_token)):
     try:
         print("logout Payload: ", payload)
         revoke_token(jti=payload["jti"], exp_time=payload["expires_at"])
-        return {"User logged out successfully."}
+        return {
+            "message": "User logged out successfully."
+        }
     except Exception as e:
         print("An error occurred [logout_user]: ")
         raise HTTPException(status_code=500, detail=f"Unexpected error in logout_user: {str(e)}")
@@ -225,7 +232,9 @@ def delete_user(payload: dict = Depends(verify_token), db: Session = Depends(get
         user_id = payload["user_id"]
         delete_user_from_the_db(user_id=user_id, db=db)
         revoke_token(jti=payload["jti"], exp_time=payload["expires_at"])
-        return {"User Deleted Successfully."}
+        return {
+            "message": "User Deleted Successfully."
+        }
     except Exception as e:
         print("An error occurred [delete_user]: ")
         raise HTTPException(status_code=500, detail=f"Unexpected error in delete_user: {str(e)}")
