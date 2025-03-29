@@ -139,7 +139,8 @@ def login_user(email: str, password: str, db: Session = Depends(get_db)):
 
             return {
                 "access_token": new_access_token,
-                "expires_at": access_token_expiry
+                "expires_at": access_token_expiry,
+                "fullname": user_data["fullname"]
             }
         else:
             return HTTPException(
@@ -196,7 +197,8 @@ def signup_user(email: str, password: str, fullname: str, db: Session = Depends(
 
             return {
                 "access_token": new_access_token,
-                "expires_at": access_token_expiry
+                "expires_at": access_token_expiry,
+                "fullname": fullname
             }
         
     except Exception as e:
