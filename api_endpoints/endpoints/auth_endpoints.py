@@ -111,7 +111,7 @@ def refresh_access_token(access_token: str, db: Session = Depends(get_db)):
 @router.post("/login")
 def login_user(email: str, password: str, db: Session = Depends(get_db)):
     """
-    CMD:  curl -X POST "http://0.0.0.0:8500/auth/login?email=jatin@apple.com&password=Hello" -L
+    CMD:  curl -X POST "http://0.0.0.0:8500/auth/login?email=jatin@apple.com&password=Hello" -L  
     The -L flag ensures that curl follows the redirect and displays the response from the /signup endpoint.
     """
     try:
