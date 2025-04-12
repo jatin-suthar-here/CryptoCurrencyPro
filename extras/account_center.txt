@@ -1,0 +1,44 @@
+
+✅ Profile
+
+✅ Account Settings
+	•	Personal Details
+        (Name, DOB, Gender, Email)
+	•	Account Details 
+        (Name, Email, Phone No, PAN No, Aadhar No, Demat Acc No / BIOD, DP Id)
+	•	Password & Security
+        Login & Recovery
+            -  Change Password
+            -  Two-Factor Authentication (2FA)
+        Security Checks
+            -  Manage Devices / Sessions
+            -  Login Alerts & Activity
+
+✅ Finance & Preference Control
+	•	Favorite Stocks
+	•	Add Balance
+	•	Linked Bank Accounts
+	•	Linked Credit/Debit Cards
+    •	Transaction Activity
+	•	Notification control 
+        Push Notifications
+            -  Pause All
+            -  Price alerts
+            -  News updates
+            -  Transaction alerts
+        Other Notifications
+            -  Feedback Emails
+            -  Support Emails
+	•	Tax Reports & Documents
+
+✅ Support & Legal
+	•	Help Center
+	•	Privacy Policy
+	•	Feedback / Bug Report
+	•	About
+
+
+✅ Account Actions
+	•	Switch Account
+	•	Log Out
+	•	Delete Account
