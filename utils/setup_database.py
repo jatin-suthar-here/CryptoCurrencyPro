@@ -58,6 +58,7 @@ auth_token_table = Table(
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),  
     Column("user_id", UUID(as_uuid=True), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, unique=True),  # Ensure one token per user  
+    ## ondelete="CASCADE" --> If a user is deleted from the users table, then the corresponding rows in the tables that contains that user_id will also be automatically deleted.
     Column("refresh_token", String(900), nullable=False, unique=True),  # Ensure token is unique  
     Column("created_at", DateTime, nullable=False, default=None),  
     Column("expires_at", DateTime, nullable=False, default=None)  

@@ -40,5 +40,9 @@ def add_user_session_in_redis(email: str, status: str):
 def get_user_session_from_redis(email: str):
     user_str = constants.REDIS_USERS_SESSION_DB + email
     return r.get(user_str)  # Returns the value of the key
+
+def delete_user_session_from_redis(email: str):
+    user_str = constants.REDIS_USERS_SESSION_DB + email
+    return r.delete(user_str)  # Deletes the matching values from the Redis DB
 ## -------------------------------------------------------------------------------
 

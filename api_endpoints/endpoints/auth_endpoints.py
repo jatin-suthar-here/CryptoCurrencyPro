@@ -12,7 +12,8 @@ from ..endpoint_utils.endpoint_utils import (verify_user_exists_in_db, upsert_re
     get_refresh_token_from_the_db, insert_user_in_the_db, delete_user_from_the_db)
 from utils.database import get_db
 from utils.utils import get_current_datetime
-from utils.redis import (is_token_revoked, revoke_token, add_user_session_in_redis, get_user_session_from_redis)
+from utils.redis import (is_token_revoked, revoke_token, add_user_session_in_redis, get_user_session_from_redis,
+    delete_user_session_from_redis)
 
 
 router = APIRouter()
@@ -234,6 +235,7 @@ def delete_user(payload: dict = Depends(verify_token), db: Session = Depends(get
         user_id = payload["user_id"]
         delete_user_from_the_db(user_id=user_id, db=db)
         revoke_token(jti=payload["jti"], exp_time=payload["expires_at"])
+        delete_user_session_from_redis(email=payload["email"])
         return {
             "message": "User Deleted Successfully."
         }
