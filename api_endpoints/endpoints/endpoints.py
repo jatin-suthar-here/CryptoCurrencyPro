@@ -11,6 +11,8 @@ from ..endpoint_utils.endpoint_utils import (upsert_favourite_stock_in_db, remov
 from models.models import StockModel, FavStockModel, TransactionType
 from typing import Dict, List
 
+from .auth_endpoints import verify_token
+
 router = APIRouter()
 
 
@@ -87,7 +89,7 @@ async def fetch_source_data_from_api():
 
 # --------------------------------------------------------------------------
 @router.get("/fetch-source-data")
-def get_source_data():
+def get_source_data(payload: dict = Depends(verify_token)):
     """
     Endpoint to return already fetched source data.
     If the data has already been fetched during startup, it will return the cached data.
@@ -97,7 +99,7 @@ def get_source_data():
             raise HTTPException(status_code=500, detail="Source data is not available.")
 
         return {
-            "message": f"Successfully extracted data on {get_current_datetime()}", 
+            "message": f"Successfully extracted data for {payload["email"]} user on {get_current_datetime()}", 
             "data": API_SOURCE_DATA
         }
     
