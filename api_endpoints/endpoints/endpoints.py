@@ -133,9 +133,9 @@ def get_trending_stocks(payload: dict = Depends(verify_token)):
 
 # --------------------------------------------------------------------------
 @router.get("/get-fav-stock") 
-def get_favourite_stocks(db: Session = Depends(get_db)):
+def get_favourite_stocks(payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     try:
-        favourite_stocks = retrieve_favourite_stocks_from_db(db=db)
+        favourite_stocks = retrieve_favourite_stocks_from_db(user_id=payload['user_id'], db=db)
         favourite_stocks_list = []
         # converting the each dict to StockModel format...
         if not API_SOURCE_DATA:
@@ -146,7 +146,7 @@ def get_favourite_stocks(db: Session = Depends(get_db)):
             # Converts all the API_SOURCE_DATA elements to dict + Add fav_id, and map all to FavStockModel.
         )
         return {
-            "message": "Data fetched successfully.", 
+            "message": f"Favourite Stocks Data fetched successfully for '{payload['email']}' user.", 
             "data": favourite_stocks_list
         }
     except Exception as e:
@@ -155,14 +155,14 @@ def get_favourite_stocks(db: Session = Depends(get_db)):
 
 
 @router.post("/add-fav-stock")
-def add_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
+def add_favourite_stocks(stock_id: str, payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     """
     Ex:  curl -X POST "http://0.0.0.0:8500/api/add-fav-stock?stock_id=bitcoin"
     """
     try:
-        upsert_favourite_stock_in_db(stock_id=stock_id, db=db)
+        upsert_favourite_stock_in_db(user_id=payload['user_id'], stock_id=stock_id, db=db)
         return {
-            "message": "Data inserted successfully", 
+            "message": f"Stock '{stock_id}' successfully added to Favourites for '{payload['email']}' user.", 
             "data": stock_id
         }
     except Exception as e:
@@ -171,14 +171,14 @@ def add_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/remove-fav-stock") 
-def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
+def remove_favourite_stocks(stock_id: str, payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     """
     Ex:  curl -X DELETE "http://0.0.0.0:8500/api/remove-fav-stock?stock_id=bitcoin"
     """
     try:
-        remove_favourite_stock_from_db(stock_id=stock_id, db=db)
+        remove_favourite_stock_from_db(user_id=payload['user_id'], stock_id=stock_id, db=db)
         return {
-            "message": "Data removed successfully", 
+            "message": f"Stock '{stock_id}' successfully removed from Favourites for '{payload['email']}' user.", 
             "data": stock_id
         }
     except Exception as e:
@@ -187,10 +187,10 @@ def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/check-fav-stock")
-def check_is_stock_favourite(stock_id: str, db: Session = Depends(get_db)):
-    data = check_is_stock_favourite_from_db(stock_id=stock_id, db=db)
+def check_is_stock_favourite(stock_id: str,  payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
+    data = check_is_stock_favourite_from_db(user_id=payload['user_id'], stock_id=stock_id, db=db)
     return {
-        "message": "Data checked successfully", 
+        "message": f"Stock '{stock_id}' checked into Favourites successfully for '{payload['email']}' user.", 
         "data": data
     }
 # --------------------------------------------------------------------------
