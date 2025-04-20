@@ -121,10 +121,7 @@ def get_trending_stocks(payload: dict = Depends(verify_token)):
         # Sorting the dictionary based on keys (stock_id)
         trending_data = dict(sorted(API_SOURCE_DATA.items()))
 
-        return {
-            "message": f"Successfully extracted trending-stocks data for '{payload['email']}' user.", 
-            "data": [i for i in trending_data.values()][:10]
-        }
+        return [i for i in trending_data.values()][:10]
     
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
