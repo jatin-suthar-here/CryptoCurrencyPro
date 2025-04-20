@@ -99,7 +99,7 @@ def get_source_data(payload: dict = Depends(verify_token)):
             raise HTTPException(status_code=500, detail="Source data is not available.")
 
         return {
-            "message": f"Successfully extracted data for {payload['email']} user on {get_current_datetime()}", 
+            "message": f"Successfully extracted data for '{payload['email']}' user on {get_current_datetime()}", 
             "data": API_SOURCE_DATA
         }
     
@@ -109,7 +109,7 @@ def get_source_data(payload: dict = Depends(verify_token)):
 
 
 @router.get("/trending-stocks")
-def get_trending_stocks():
+def get_trending_stocks(payload: dict = Depends(verify_token)):
     """
     Endpoint to get the top 10 trending stocks.
     Depends on 'API_SOURCE_DATA' being populated.
@@ -121,7 +121,10 @@ def get_trending_stocks():
         # Sorting the dictionary based on keys (stock_id)
         trending_data = dict(sorted(API_SOURCE_DATA.items()))
 
-        return [i for i in trending_data.values()][:10]
+        return {
+            "message": f"Successfully extracted trending-stocks data for '{payload['email']}' user.", 
+            "data": [i for i in trending_data.values()][:10]
+        }
     
     except Exception as e:
         print(f"Unexpected error: {str(e)}")

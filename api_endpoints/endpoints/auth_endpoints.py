@@ -51,7 +51,7 @@ def create_jwt_token(user_data: dict):
 def verify_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, constants.SECRET_KEY, algorithms=[constants.ALGORITHM])
-        print("\n>>>>> payload : ", payload, "\n")
+        print("\n>>>>> payload [verify_token]: ", payload, "\n")
         # Parse the expires_at string into a datetime object
         expires_at = datetime.strptime(payload["expires_at"], "%Y-%m-%d %I:%M:%S %p").replace(tzinfo=timezone.utc)
         if expires_at < datetime.now(timezone.utc):
