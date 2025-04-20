@@ -99,7 +99,7 @@ def get_source_data(payload: dict = Depends(verify_token)):
             raise HTTPException(status_code=500, detail="Source data is not available.")
 
         return {
-            "message": f"Successfully extracted data for {payload["email"]} user on {get_current_datetime()}", 
+            "message": f"Successfully extracted data for {payload['email']} user on {get_current_datetime()}", 
             "data": API_SOURCE_DATA
         }
     
