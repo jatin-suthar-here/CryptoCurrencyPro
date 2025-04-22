@@ -261,7 +261,7 @@ def get_stock_quantity_available_for_sell(stock_id: str, payload: dict = Depends
     Ex:  curl -X GET "http://0.0.0.0:8500/api/get-stock-sell-qty?stock_id=bitcoin"
     """
     try:
-        data = get_stock_quantity_available_for_sell_in_db(stock_id=stock_id, db=db)
+        data = get_stock_quantity_available_for_sell_in_db(user_id=payload['user_id'], stock_id=stock_id, db=db)
         return {
             "message": f"Fetched the Quantity for Stock '{stock_id}' successfully for '{payload['email']}' user.",
             "data": data
