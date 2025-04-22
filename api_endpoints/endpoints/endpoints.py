@@ -276,14 +276,14 @@ def get_stock_quantity_available_for_sell(stock_id: str, db: Session = Depends(g
 
 # --------------------------------------------------------------------------
 @router.get("/get-balance")
-def get_user_balance(): # db: Session = Depends(get_db)):
+def get_user_balance(payload: dict = Depends(verify_token)): # db: Session = Depends(get_db)):
     """
     Ex:  curl -X GET "http://0.0.0.0:8500/api/get-balance"
     """
     try:
         data = USER_BALANCE
         return {
-            "message": "Sell Transaction successfull", 
+            "message": f"Fetched the User Balance successfully for '{payload['email']}' user.", 
             "data": data
         }
     except Exception as e:
