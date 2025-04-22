@@ -200,7 +200,7 @@ def check_is_stock_favourite(stock_id: str,  payload: dict = Depends(verify_toke
 
 # --------------------------------------------------------------------------
 @router.post("/buy-stock")
-def buy_stocks(stock_id: str, quantity: int, current_price: str, db: Session = Depends(get_db)):
+def buy_stocks(stock_id: str, quantity: int, current_price: str, payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     """
     Ex:  curl -X POST "http://0.0.0.0:8500/api/buy-stock?stock_id=bitcoin&quantity=2&current_price=45000"
     """
@@ -212,14 +212,14 @@ def buy_stocks(stock_id: str, quantity: int, current_price: str, db: Session = D
             "price_at_transaction": current_price,
             "timestamp": get_current_datetime()
         }
-        upsert_buy_transaction_in_db(stock_data=stock_data, db=db)
+        upsert_buy_transaction_in_db(user_id=payload['user_id'], stock_data=stock_data, db=db)
 
         ## Updating user balance on Buying Stocks
         global USER_BALANCE
         USER_BALANCE = USER_BALANCE - (float(current_price) * quantity)
 
         return {
-            "message": "Buy Transaction successfull", 
+            "message": f"Buy Transaction for Stock '{stock_id}' successfull for '{payload['email']}' user.",
             "data": stock_data
         }
     except Exception as e:
@@ -228,7 +228,7 @@ def buy_stocks(stock_id: str, quantity: int, current_price: str, db: Session = D
 
 
 @router.post("/sell-stock")
-def sell_stocks(stock_id: str, quantity: int, current_price: str, db: Session = Depends(get_db)):
+def sell_stocks(stock_id: str, quantity: int, current_price: str, payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     """
     Ex:  curl -X POST "http://0.0.0.0:8500/api/sell-stock?stock_id=bitcoin&quantity=2&current_price=45000"
     """
@@ -240,14 +240,14 @@ def sell_stocks(stock_id: str, quantity: int, current_price: str, db: Session = 
             "price_at_transaction": current_price,
             "timestamp": get_current_datetime()
         }
-        upsert_sell_transaction_in_db(stock_data=stock_data, db=db)
+        upsert_sell_transaction_in_db(user_id=payload['user_id'], stock_data=stock_data, db=db)
 
         ## Updating user balance on Selling Stocks
         global USER_BALANCE
         USER_BALANCE = USER_BALANCE + (float(current_price) * quantity)
         
         return {
-            "message": "Sell Transaction successfull", 
+            "message": f"Sell Transaction for Stock '{stock_id}' successfull for '{payload['email']}' user.",
             "data": stock_data
         }
     except Exception as e:
@@ -256,14 +256,14 @@ def sell_stocks(stock_id: str, quantity: int, current_price: str, db: Session = 
 
 
 @router.get("/get-stock-sell-qty")
-def get_stock_quantity_available_for_sell(stock_id: str, db: Session = Depends(get_db)):
+def get_stock_quantity_available_for_sell(stock_id: str, payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     """
     Ex:  curl -X GET "http://0.0.0.0:8500/api/get-stock-sell-qty?stock_id=bitcoin"
     """
     try:
         data = get_stock_quantity_available_for_sell_in_db(stock_id=stock_id, db=db)
         return {
-            "message": "Sell Transaction successfull", 
+            "message": f"Fetched the Quantity for Stock '{stock_id}' successfully for '{payload['email']}' user.",
             "data": data
         }
     except Exception as e:
