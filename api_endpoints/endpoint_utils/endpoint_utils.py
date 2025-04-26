@@ -266,6 +266,3 @@ def delete_user_from_the_db(user_id: str, db: Session):
         raise e
 # --------------------------------------------------------------------------
 
-
-
-

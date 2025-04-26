@@ -290,4 +290,3 @@ def get_user_balance(payload: dict = Depends(verify_token)): # db: Session = Dep
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 # --------------------------------------------------------------------------
-
