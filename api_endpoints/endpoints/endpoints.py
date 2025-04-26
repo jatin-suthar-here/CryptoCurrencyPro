@@ -1,17 +1,17 @@
 import requests, json
 import aiofiles
 import asyncio  # For periodic tasks
-from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends, WebSocket
 from sqlalchemy.orm import Session
-from constants import constants
 from utils.database import get_db
-from utils.utils import get_current_time
+from utils.utils import get_current_datetime
 from ..endpoint_utils.endpoint_utils import (upsert_favourite_stock_in_db, remove_favourite_stock_from_db,
     retrieve_favourite_stocks_from_db, check_is_stock_favourite_from_db, upsert_buy_transaction_in_db, 
     upsert_sell_transaction_in_db, get_stock_quantity_available_for_sell_in_db)
 from models.models import StockModel, FavStockModel, TransactionType
 from typing import Dict, List
+
+from .auth_endpoints import verify_token
 
 router = APIRouter()
 
@@ -89,7 +89,7 @@ async def fetch_source_data_from_api():
 
 # --------------------------------------------------------------------------
 @router.get("/fetch-source-data")
-def get_source_data():
+def get_source_data(payload: dict = Depends(verify_token)):
     """
     Endpoint to return already fetched source data.
     If the data has already been fetched during startup, it will return the cached data.
@@ -99,7 +99,7 @@ def get_source_data():
             raise HTTPException(status_code=500, detail="Source data is not available.")
 
         return {
-            "message": f"Successfully extracted data on {get_current_time()}", 
+            "message": f"Successfully extracted data for '{payload['email']}' user on {get_current_datetime()}", 
             "data": API_SOURCE_DATA
         }
     
@@ -109,7 +109,7 @@ def get_source_data():
 
 
 @router.get("/trending-stocks")
-def get_trending_stocks():
+def get_trending_stocks(payload: dict = Depends(verify_token)):
     """
     Endpoint to get the top 10 trending stocks.
     Depends on 'API_SOURCE_DATA' being populated.
@@ -133,9 +133,9 @@ def get_trending_stocks():
 
 # --------------------------------------------------------------------------
 @router.get("/get-fav-stock") 
-def get_favourite_stocks(db: Session = Depends(get_db)):
+def get_favourite_stocks(payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     try:
-        favourite_stocks = retrieve_favourite_stocks_from_db(db=db)
+        favourite_stocks = retrieve_favourite_stocks_from_db(user_id=payload['user_id'], db=db)
         favourite_stocks_list = []
         # converting the each dict to StockModel format...
         if not API_SOURCE_DATA:
@@ -146,7 +146,7 @@ def get_favourite_stocks(db: Session = Depends(get_db)):
             # Converts all the API_SOURCE_DATA elements to dict + Add fav_id, and map all to FavStockModel.
         )
         return {
-            "message": "Data fetched successfully.", 
+            "message": f"Favourite Stocks Data fetched successfully for '{payload['email']}' user.", 
             "data": favourite_stocks_list
         }
     except Exception as e:
@@ -155,14 +155,14 @@ def get_favourite_stocks(db: Session = Depends(get_db)):
 
 
 @router.post("/add-fav-stock")
-def add_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
+def add_favourite_stocks(stock_id: str, payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     """
     Ex:  curl -X POST "http://0.0.0.0:8500/api/add-fav-stock?stock_id=bitcoin"
     """
     try:
-        upsert_favourite_stock_in_db(stock_id=stock_id, db=db)
+        upsert_favourite_stock_in_db(user_id=payload['user_id'], stock_id=stock_id, db=db)
         return {
-            "message": "Data inserted successfully", 
+            "message": f"Stock '{stock_id}' successfully added to Favourites for '{payload['email']}' user.", 
             "data": stock_id
         }
     except Exception as e:
@@ -171,14 +171,14 @@ def add_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/remove-fav-stock") 
-def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
+def remove_favourite_stocks(stock_id: str, payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     """
     Ex:  curl -X DELETE "http://0.0.0.0:8500/api/remove-fav-stock?stock_id=bitcoin"
     """
     try:
-        remove_favourite_stock_from_db(stock_id=stock_id, db=db)
+        remove_favourite_stock_from_db(user_id=payload['user_id'], stock_id=stock_id, db=db)
         return {
-            "message": "Data removed successfully", 
+            "message": f"Stock '{stock_id}' successfully removed from Favourites for '{payload['email']}' user.", 
             "data": stock_id
         }
     except Exception as e:
@@ -187,10 +187,10 @@ def remove_favourite_stocks(stock_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/check-fav-stock")
-def check_is_stock_favourite(stock_id: str, db: Session = Depends(get_db)):
-    data = check_is_stock_favourite_from_db(stock_id=stock_id, db=db)
+def check_is_stock_favourite(stock_id: str,  payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
+    data = check_is_stock_favourite_from_db(user_id=payload['user_id'], stock_id=stock_id, db=db)
     return {
-        "message": "Data checked successfully", 
+        "message": f"Stock '{stock_id}' checked into Favourites successfully for '{payload['email']}' user.", 
         "data": data
     }
 # --------------------------------------------------------------------------
@@ -200,7 +200,7 @@ def check_is_stock_favourite(stock_id: str, db: Session = Depends(get_db)):
 
 # --------------------------------------------------------------------------
 @router.post("/buy-stock")
-def buy_stocks(stock_id: str, quantity: int, current_price: str, db: Session = Depends(get_db)):
+def buy_stocks(stock_id: str, quantity: int, current_price: str, payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     """
     Ex:  curl -X POST "http://0.0.0.0:8500/api/buy-stock?stock_id=bitcoin&quantity=2&current_price=45000"
     """
@@ -210,16 +210,16 @@ def buy_stocks(stock_id: str, quantity: int, current_price: str, db: Session = D
             "quantity": quantity,
             "type": TransactionType.BUY.value,
             "price_at_transaction": current_price,
-            "timestamp": datetime.now(timezone.utc)
+            "timestamp": get_current_datetime()
         }
-        upsert_buy_transaction_in_db(stock_data=stock_data, db=db)
+        upsert_buy_transaction_in_db(user_id=payload['user_id'], stock_data=stock_data, db=db)
 
         ## Updating user balance on Buying Stocks
         global USER_BALANCE
         USER_BALANCE = USER_BALANCE - (float(current_price) * quantity)
 
         return {
-            "message": "Buy Transaction successfull", 
+            "message": f"Buy Transaction for Stock '{stock_id}' successfull for '{payload['email']}' user.",
             "data": stock_data
         }
     except Exception as e:
@@ -228,7 +228,7 @@ def buy_stocks(stock_id: str, quantity: int, current_price: str, db: Session = D
 
 
 @router.post("/sell-stock")
-def sell_stocks(stock_id: str, quantity: int, current_price: str, db: Session = Depends(get_db)):
+def sell_stocks(stock_id: str, quantity: int, current_price: str, payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     """
     Ex:  curl -X POST "http://0.0.0.0:8500/api/sell-stock?stock_id=bitcoin&quantity=2&current_price=45000"
     """
@@ -238,16 +238,16 @@ def sell_stocks(stock_id: str, quantity: int, current_price: str, db: Session = 
             "quantity": quantity,
             "type": TransactionType.SELL.value,
             "price_at_transaction": current_price,
-            "timestamp": datetime.now(timezone.utc)
+            "timestamp": get_current_datetime()
         }
-        upsert_sell_transaction_in_db(stock_data=stock_data, db=db)
+        upsert_sell_transaction_in_db(user_id=payload['user_id'], stock_data=stock_data, db=db)
 
         ## Updating user balance on Selling Stocks
         global USER_BALANCE
         USER_BALANCE = USER_BALANCE + (float(current_price) * quantity)
         
         return {
-            "message": "Sell Transaction successfull", 
+            "message": f"Sell Transaction for Stock '{stock_id}' successfull for '{payload['email']}' user.",
             "data": stock_data
         }
     except Exception as e:
@@ -256,14 +256,14 @@ def sell_stocks(stock_id: str, quantity: int, current_price: str, db: Session = 
 
 
 @router.get("/get-stock-sell-qty")
-def get_stock_quantity_available_for_sell(stock_id: str, db: Session = Depends(get_db)):
+def get_stock_quantity_available_for_sell(stock_id: str, payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     """
     Ex:  curl -X GET "http://0.0.0.0:8500/api/get-stock-sell-qty?stock_id=bitcoin"
     """
     try:
-        data = get_stock_quantity_available_for_sell_in_db(stock_id=stock_id, db=db)
+        data = get_stock_quantity_available_for_sell_in_db(user_id=payload['user_id'], stock_id=stock_id, db=db)
         return {
-            "message": "Sell Transaction successfull", 
+            "message": f"Fetched the Quantity for Stock '{stock_id}' successfully for '{payload['email']}' user.",
             "data": data
         }
     except Exception as e:
@@ -272,18 +272,21 @@ def get_stock_quantity_available_for_sell(stock_id: str, db: Session = Depends(g
 # --------------------------------------------------------------------------
 
 
+
+
+# --------------------------------------------------------------------------
 @router.get("/get-balance")
-def get_user_balance(): # db: Session = Depends(get_db)):
+def get_user_balance(payload: dict = Depends(verify_token)): # db: Session = Depends(get_db)):
     """
     Ex:  curl -X GET "http://0.0.0.0:8500/api/get-balance"
     """
     try:
         data = USER_BALANCE
         return {
-            "message": "Sell Transaction successfull", 
+            "message": f"Fetched the User Balance successfully for '{payload['email']}' user.", 
             "data": data
         }
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-
+# --------------------------------------------------------------------------

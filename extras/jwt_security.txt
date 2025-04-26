@@ -1,0 +1,50 @@
+--------------------------------------------------------------------------------------------------
+IMPROVE JWT SECURITY 
+--------------------------------------------------------------------------------------------------
+
+
+
+
+1. Use JWT with a Secret + Public/Private Key (RS256 or ES256)
+--------------------------------------------------------------------------------------------------
+•	Instead of HS256 (shared secret), use RS256 (public/private key pair).
+•	Only the server can sign JWTs, but anyone with the public key can verify them.
+•	Even if an attacker gets the public key, they cannot forge valid JWTs.
+
+🔹 Example: Generate RSA Key Pair
+openssl genpkey -algorithm RSA -out private_key.pem
+openssl rsa -pubout -in private_key.pem -out public_key.pem
+
+🔹 Example: Use RS256 in Python
+private_key = open("private_key.pem", "r").read()
+public_key = open("public_key.pem", "r").read()
+token = jwt.encode(payload, private_key, algorithm="RS256")  # Signing
+decoded = jwt.decode(token, public_key, algorithms=["RS256"])  # Verification
+--------------------------------------------------------------------------------------------------
+
+
+
+
+2. Token Revocation (Blacklist) – Preventing Unauthorized JWT Usage
+--------------------------------------------------------------------------------------------------
+Since JWTs are stateless, they cannot be invalidated once issued. This means that even if a user logs out or an admin revokes access, the JWT remains valid until it expires.
+To mitigate this risk, we use token revocation (blacklisting) to manually invalidate tokens before they expire.
+
+🛑 Problem: Why Do We Need Token Blacklisting?
+	1.	User Logs Out → The JWT is still valid until it expires.
+	2.	User’s Account is Disabled → The old JWT can still be used to access services.
+	3.	Token is Stolen → The attacker can use the JWT until it expires.
+	4.	Session Hijacking → If someone hijacks a session, they retain access even after the user logs out.
+
+✅ Solution: How Token Blacklisting Works
+We store invalidated JWTs (or their unique IDs) in a database or cache (like Redis) and check against this list when verifying tokens.
+🔹 Steps to Implement Token Blacklisting
+	1.	When a user logs out or their token needs to be revoked, store the token ID (jti) in a blacklist.
+	2.	When verifying JWTs, check if the jti exists in the blacklist.
+	3.	If it’s in the blacklist, reject the token.
+
+🔹 How It Works in a Real Application
+	1.	User logs in → Receives a JWT with a jti and expiration time.
+	2.	User logs out → The jti is added to Redis (blacklist).
+	3.	User (or attacker) tries using the old token → The system checks Redis and rejects it if blacklisted.
+--------------------------------------------------------------------------------------------------

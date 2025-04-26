@@ -1,14 +1,14 @@
 import uvicorn, argparse
 import asyncio
 from fastapi import FastAPI, WebSocket
-from api_endpoints.endpoints import endpoints, home, filters
+from api_endpoints.endpoints import endpoints, auth_endpoints, home, filters
 from utils import setup_database
 
 
 async def app_lifespan(app: FastAPI):
     """ Lifespan event handler for FastAPI app startup and shutdown. """
-    print("App is starting...")
-    
+    print("✅ App is starting...")
+
     # Startup logic
     # Populate API_SOURCE_DATA during startup of App (Server)
     await endpoints.fetch_source_data_from_api()  
@@ -20,8 +20,8 @@ async def app_lifespan(app: FastAPI):
     yield  
 
     # Shutdown logic (if needed)
-    print("App is shutting down...")
-
+    print("🛑 App is shutting down...")
+    
 
 # Pass the lifespan function to FastAPI
 app = FastAPI(lifespan=app_lifespan)  
@@ -30,6 +30,7 @@ app = FastAPI(lifespan=app_lifespan)
 # Include routers
 app.include_router(home.router)
 app.include_router(endpoints.router, prefix="/api")
+app.include_router(auth_endpoints.router, prefix="/auth")
 app.include_router(filters.router, prefix="/api")
 
 

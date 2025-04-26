@@ -17,13 +17,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 RAW TOKEN DICT STRUCTURE:
 
 {
-    "exp": "expiry-datatime,
     "iss": "jatin.suthar.com",  ## Verify Token Issuer (iss)
+    'fullname',
     'username',
     'password',
-    'email',
-    'firstName',
-    'lastName'
+    "exp": "expiry-datatime
 }
 """
 
